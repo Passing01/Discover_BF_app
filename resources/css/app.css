@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PosterMyWall-like UI enhancements */
+:root{
+  --pmw-bg: #0f0f12;
+  --pmw-surface: #15161a;
+  --pmw-card: #1a1b20;
+  --pmw-text: #e6e6ea;
+  --pmw-muted: #9aa0a6;
+  --pmw-accent: #4f8cff;
+}
+
+.pmw-modal .modal-content{
+  background: var(--pmw-surface);
+  color: var(--pmw-text);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.pmw-modal .modal-header,
+.pmw-modal .modal-footer{
+  border-color: rgba(255,255,255,0.06);
+}
+.pmw-input .form-control,
+.pmw-input .input-group-text,
+.pmw-input .btn{
+  background: var(--pmw-card);
+  color: var(--pmw-text);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.pmw-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.pmw-card{
+  background: var(--pmw-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.pmw-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,.35);
+}
+.pmw-thumb{
+  position: relative;
+  aspect-ratio: 3/4;
+  background: #0b0b0e;
+  overflow: hidden;
+}
+.pmw-thumb img{
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scale(1.01);
+  transition: transform .25s ease;
+}
+.pmw-card:hover .pmw-thumb img{ transform: scale(1.06); }
+
+.pmw-body{ padding: 10px 12px; }
+.pmw-title{ font-weight: 600; font-size: 14px; color: var(--pmw-text); }
+.pmw-sub{ font-size: 12px; color: var(--pmw-muted); }
+
+.pmw-actions{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 10px; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.8) 100%);
+  transform: translateY(100%);
+  transition: transform .2s ease;
+}
+.pmw-card:hover .pmw-actions{ transform: translateY(0%); }
+
+.pmw-actions .btn{ font-weight: 600; }
+.badge-source{ position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; padding: 4px 6px; border-radius: 6px; }
+
+/* Wizard preview panel */
+.pmw-preview{
+  background: #0b0c10;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+}
+.pmw-preview .frame{
+  border-radius: 12px; overflow: hidden; position: relative; background: #101215;
+}
+.pmw-preview .frame img{ position:absolute; inset:0; width:100%; height:100%; object-fit: cover; }
+.pmw-overlay-text{ text-shadow: 0 2px 4px rgba(0,0,0,.35); letter-spacing: .2px; }

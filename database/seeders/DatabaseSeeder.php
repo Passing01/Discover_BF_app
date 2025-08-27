@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             RestaurantDemoSeeder::class,
             AdsDemoSeeder::class,
             CommunityPostsTableSeeder::class,
+            EventCategoriesTableSeeder::class,
         ]);
     }
 }

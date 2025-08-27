@@ -18,6 +18,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         CommunityPost::class => CommunityPostPolicy::class,
         CommunityComment::class => CommunityCommentPolicy::class,
+        \App\Models\Site\Event::class => \App\Policies\EventPolicy::class,
     ];
 
     /**

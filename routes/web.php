@@ -97,12 +97,54 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/tourist/hotels/{hotel}', [TouristHotelController::class, 'show'])->name('tourist.hotels.show');
     Route::post('/tourist/rooms/{room}/book', [TouristHotelController::class, 'book'])->middleware('tourist')->name('tourist.rooms.book');
 
+    // Tourist: Événements
     Route::get('/tourist/events', [TouristEventController::class, 'index'])->name('tourist.events.index');
     Route::get('/tourist/events/{event}', [TouristEventController::class, 'show'])->name('tourist.events.show');
     // Back-compat: redirect old tourist booking endpoint to new public booking flow
     Route::match(['get','post'],'/tourist/events/{event}/book', function(\App\Models\Event $event) {
         return redirect()->route('bookings.create', $event);
     })->name('tourist.events.book');
+
+    // Gestion des événements pour les organisateurs
+    Route::middleware(['can:manage,App\\Models\\Event'])->group(function () {
+        // Liste des événements
+        Route::get('/organizer/events', [\App\Http\Controllers\EventController::class, 'index'])
+            ->name('organizer.events.index');
+            
+        // Création d'événement
+        Route::get('/organizer/events/create', [\App\Http\Controllers\EventController::class, 'create'])
+            ->name('organizer.events.create');
+        Route::post('/organizer/events', [\App\Http\Controllers\EventController::class, 'store'])
+            ->name('organizer.events.store');
+            
+        // Édition d'événement
+        Route::get('/organizer/events/{event}/edit', [\App\Http\Controllers\EventController::class, 'edit'])
+            ->name('organizer.events.edit');
+        Route::put('/organizer/events/{event}', [\App\Http\Controllers\EventController::class, 'update'])
+            ->name('organizer.events.update');
+            
+        // Suppression d'événement
+        Route::delete('/organizer/events/{event}', [\App\Http\Controllers\EventController::class, 'destroy'])
+            ->name('organizer.events.destroy');
+            
+        // Gestion des inscriptions
+        Route::get('/organizer/events/{event}/registrations', [\App\Http\Controllers\EventRegistrationController::class, 'index'])
+            ->name('organizer.events.registrations');
+        Route::get('/organizer/registrations/{registration}', [\App\Http\Controllers\EventRegistrationController::class, 'show'])
+            ->name('organizer.registrations.show');
+        Route::post('/organizer/registrations/{registration}/status', [\App\Http\Controllers\EventRegistrationController::class, 'updateStatus'])
+            ->name('organizer.registrations.status');
+            
+        // Export des inscriptions
+        Route::get('/organizer/events/{event}/export', [\App\Http\Controllers\EventRegistrationController::class, 'export'])
+            ->name('organizer.events.export');
+            
+        // Gestion des médias
+        Route::post('/organizer/events/{event}/media', [\App\Http\Controllers\EventMediaController::class, 'store'])
+            ->name('organizer.events.media.store');
+        Route::delete('/organizer/media/{media}', [\App\Http\Controllers\EventMediaController::class, 'destroy'])
+            ->name('organizer.media.destroy');
+    });
 
     // Tourist: Mes réservations
     Route::get('/tourist/bookings', [TouristBookingController::class, 'index'])->name('tourist.bookings.index');

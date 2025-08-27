@@ -49,6 +49,9 @@ Route::view('/legal/privacy', 'legal.privacy')->name('legal.privacy');
 Route::get('/t/{uuid}', [TicketController::class, 'showByUuid'])->name('tickets.show.uuid');
 Route::get('/t/{uuid}/download', [TicketController::class, 'downloadByUuid'])->name('tickets.download.uuid');
 
+// Explore Map
+Route::get('/explore', [App\Http\Controllers\MapController::class, 'explore'])->name('explore.map');
+
 // Public Event Catalog & Details
 Route::get('/events', [TouristEventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [TouristEventController::class, 'show'])->name('events.show');
@@ -83,7 +86,7 @@ Route::middleware(['auth','active'])->group(function () {
 
     // Tourist Dashboard
     Route::get('/tourist/dashboard', [\App\Http\Controllers\TouristDashboardController::class, 'index'])->name('tourist.dashboard');
-    Route::view('/tourist/community', 'tourist.community')->name('tourist.community');
+    Route::get('/tourist/community', [\App\Http\Controllers\Community\CommunityPostController::class, 'index'])->name('tourist.community');
 
     // Tourist Calendar
     Route::get('/tourist/calendar', [TouristCalendarController::class, 'index'])->name('tourist.calendar');
@@ -145,6 +148,30 @@ Route::middleware(['auth','active'])->group(function () {
         Route::get('/moderation', [\App\Http\Controllers\AdminModerationController::class, 'index'])->name('moderation');
         Route::post('/moderation/restaurants/{restaurant}/toggle', [\App\Http\Controllers\AdminModerationController::class, 'toggleRestaurant'])->name('moderation.restaurant.toggle');
         Route::post('/moderation/dishes/{dish}/toggle', [\App\Http\Controllers\AdminModerationController::class, 'toggleDish'])->name('moderation.dish.toggle');
+        
+        // Gestion des publications de la communauté
+        Route::prefix('community/posts')->name('community.posts.')->group(function () {
+            // Liste des publications
+            Route::get('/', [\App\Http\Controllers\Community\CommunityPostController::class, 'adminIndex'])->name('index');
+            
+            // Publications désactivées
+            Route::get('/trashed', [\App\Http\controllers\Community\CommunityPostController::class, 'trashed'])->name('trashed');
+            
+            // Désactiver une publication
+            Route::post('/{post}/deactivate', [\App\Http\Controllers\Community\CommunityPostController::class, 'deactivate'])
+                ->name('deactivate')
+                ->where('post', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+                
+            // Réactiver une publication
+            Route::post('/{post}/activate', [\App\Http\Controllers\Community\CommunityPostController::class, 'activate'])
+                ->name('activate')
+                ->where('post', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+                
+            // Supprimer définitivement une publication
+            Route::delete('/{post}/force-delete', [\App\Http\Controllers\Community\CommunityPostController::class, 'forceDelete'])
+                ->name('force-delete')
+                ->where('post', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+        });
 
         // Ads
         Route::get('/ads', [\App\Http\Controllers\AdminAdController::class, 'index'])->name('ads');
@@ -291,3 +318,35 @@ Route::middleware(['auth','active'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Inclure les routes de la communauté
+require __DIR__.'/community.php';
+
+// Routes de la communauté
+Route::middleware(['auth'])->group(function () {
+    // Routes pour les publications
+    Route::get('community/posts', 'App\Http\Controllers\Community\CommunityPostController@index')
+        ->name('community.posts.index');
+    Route::get('community/posts/create', 'App\Http\Controllers\Community\CommunityPostController@create')
+        ->name('community.posts.create');
+    Route::post('community/posts', 'App\Http\Controllers\Community\CommunityPostController@store')
+        ->name('community.posts.store');
+    Route::get('community/posts/{post}', 'App\Http\Controllers\Community\CommunityPostController@show')
+        ->name('community.posts.show');
+    Route::get('community/posts/{post}/edit', 'App\Http\Controllers\Community\CommunityPostController@edit')
+        ->name('community.posts.edit');
+    Route::put('community/posts/{post}', 'App\Http\Controllers\Community\CommunityPostController@update')
+        ->name('community.posts.update');
+    Route::delete('community/posts/{post}', 'App\Http\Controllers\Community\CommunityPostController@destroy')
+        ->name('community.posts.destroy');
+    
+    // Routes pour les commentaires
+    Route::post('community/posts/{post}/comments', 'App\Http\Controllers\Community\CommentController@store')
+        ->name('community.comments.store');
+    Route::delete('community/comments/{comment}', 'App\Http\Controllers\Community\CommentController@destroy')
+        ->name('community.comments.destroy');
+    
+    // Routes pour les likes
+    Route::post('community/posts/{post}/like', 'App\Http\Controllers\Community\LikeController@toggleLike')
+        ->name('community.posts.like');
+});

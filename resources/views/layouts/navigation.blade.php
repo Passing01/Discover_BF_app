@@ -27,6 +27,9 @@
                         <x-nav-link :href="url('/')" :active="request()->is('/')">
                             {{ __('Accueil') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('community.posts.index')" :active="request()->routeIs('community.*')">
+                            {{ __('Communauté') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>

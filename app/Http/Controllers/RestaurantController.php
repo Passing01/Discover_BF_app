@@ -79,11 +79,13 @@ class RestaurantController extends Controller
             'reservation_at' => $data['reservation_at'],
             'party_size' => $data['party_size'],
             'status' => 'requested',
+            'payment_status' => 'pending',
             'special_requests' => $data['special_requests'] ?? null,
             'order_items' => !empty($orderItems) ? $orderItems : null,
         ]);
 
-        return redirect()->route('food.restaurants.reservations.show', $reservation);
+        // Rediriger vers le formulaire de paiement avec le type et l'ID de réservation
+        return redirect()->route('payment.form', ['type' => 'restaurant', 'id' => $reservation->id]);
     }
 
     public function showReservation(RestaurantReservation $reservation)

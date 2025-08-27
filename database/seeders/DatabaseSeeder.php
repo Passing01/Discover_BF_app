@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         // Register custom seeders
         $this->call([
+            RolePermissionSeeder::class,
             NonTouristUsersSeeder::class,
             AmenitiesAndRulesSeeder::class,
             TransportDemoSeeder::class,
@@ -26,6 +27,7 @@ class DatabaseSeeder extends Seeder
             TouristSitesSeeder::class,
             RestaurantDemoSeeder::class,
             AdsDemoSeeder::class,
+            CommunityPostsTableSeeder::class,
         ]);
     }
 }

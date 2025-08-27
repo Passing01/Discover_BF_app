@@ -46,6 +46,7 @@
           <a href="{{ route('admin.ads') }}" class="nav-item nav-link {{ request()->routeIs('admin.ads*') ? 'active' : '' }}"><i class="fa fa-bullhorn me-2"></i>Publicités</a>
           <a href="{{ route('admin.notifications') }}" class="nav-item nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}"><i class="fa fa-bell me-2"></i>Notifications</a>
           <a href="{{ route('assistant.index') }}" class="nav-item nav-link"><i class="bi bi-stars me-2"></i>Assistant IA</a>
+          <a href="{{ route('tourist.community') }}" class="nav-item nav-link"><i class="bi bi-people me-2"></i>Communauté</a>
           <a href="{{ url('/') }}" target="_blank" class="nav-item nav-link"><i class="fa fa-home me-2"></i>Accueil site</a>
         </div>
       </nav>

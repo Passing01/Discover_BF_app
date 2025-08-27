@@ -36,6 +36,12 @@ class BusTrip extends Model
 
     public function bookings()
     {
-        return $this->hasMany(BusBooking::class);
+        return $this->hasMany(BusBooking::class, 'bus_trip_id');
+    }
+    
+    // Alias pour la compatibilité
+    public function reservations()
+    {
+        return $this->bookings();
     }
 }

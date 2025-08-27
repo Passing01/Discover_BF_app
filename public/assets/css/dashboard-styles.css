@@ -1,0 +1,214 @@
+/* Variables CSS */
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --accent-color: #4cc9f0;
+  --light-bg: #f8f9fa;
+  --card-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05);
+  --card-hover-shadow: 0 0.5rem 1.5rem rgba(67, 97, 238, 0.15);
+  --border-radius: 0.75rem;
+  --transition: all 0.3s ease;
+}
+
+/* Styles généraux */
+.dashboard-container {
+  padding: 1.5rem 0;
+}
+
+/* En-tête du tableau de bord */
+.dashboard-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--border-radius);
+  color: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  transform: rotate(30deg);
+}
+
+/* Cartes */
+.dashboard-card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  height: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+}
+
+/* Boutons */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  border-radius: 2rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.btn-outline-light {
+  border-radius: 2rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+/* Événements */
+.event-card {
+  border-left: 4px solid var(--primary-color);
+  transition: var(--transition);
+  margin-bottom: 0.75rem;
+}
+
+.event-card:hover {
+  transform: translateX(5px);
+  background-color: rgba(67, 97, 238, 0.03);
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.8em;
+  border-radius: 2rem;
+}
+
+/* Carte météo */
+.weather-card {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-card .temp {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Carte de voyage */
+.trip-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 2rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.trip-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+  z-index: 1;
+}
+
+.trip-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Cartes de statistiques */
+.stats-card {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  background: white;
+  box-shadow: var(--card-shadow);
+}
+
+.stats-card .number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0.5rem 0;
+  line-height: 1;
+}
+
+.stats-card .label {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Carte de localisation */
+.location-card {
+  height: 100%;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.location-card .map-container {
+  height: 200px;
+  width: 100%;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* Animation de chargement */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-card {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header {
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  
+  .dashboard-header .btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .dashboard-card {
+    margin-bottom: 1rem;
+  }
+}

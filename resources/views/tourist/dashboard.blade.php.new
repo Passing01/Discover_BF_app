@@ -1,0 +1,460 @@
+@extends('layouts.tourist')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/dashboard-styles.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+@endpush
+
+@section('content')
+<div class="dashboard-container">
+  <!-- Hero Section -->
+  <div class="dashboard-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-2">Bonjour, {{ $user?->name ?? 'Voyageur' }} 👋</h1>
+        <p class="lead mb-4">Découvrez les merveilles du Burkina Faso et vivez une expérience inoubliable</p>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ route('assistant.index') }}" class="btn btn-light me-2 mb-2">
+            <i class="bi bi-robot me-1"></i> Assistant de voyage
+          </a>
+          <a href="{{ route('tourist.plan') }}" class="btn btn-outline-light mb-2">
+            <i class="bi bi-calendar3 me-1"></i> Planifier un voyage
+          </a>
+          <a href="{{ route('events.index') }}" class="btn btn-outline-light mb-2">
+            <i class="bi bi-geo-alt me-1"></i> Explorer la carte
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4 d-none d-md-block">
+        <div class="text-center">
+          <img src="{{ asset('assets/img/dashboard-hero.svg') }}" alt="Voyage" class="img-fluid" style="max-height: 180px;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Colonne principale -->
+    <div class="col-lg-8">
+      <!-- Carte de voyage en cours -->
+      <div class="dashboard-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-geo-alt-fill me-2"></i>Votre voyage en cours</span>
+          <a href="{{ route('tourist.plan') }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+        </div>
+        <div class="card-body p-0">
+          @if(($currentTrip['start'] ?? null) && ($currentTrip['end'] ?? null))
+            <div class="trip-card" style="background-image: url('{{ asset('assets/img/destinations/ouagadougou.jpg') }}')">
+              <h3 class="h4 mb-2">{{ $currentTrip['city'] ?? 'Burkina Faso' }}</h3>
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-calendar3 me-2"></i>
+                <span>{{ \Illuminate\Support\Carbon::parse($currentTrip['start'])->format('d M') }} - {{ \Illuminate\Support\Carbon::parse($currentTrip['end'])->format('d M Y') }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark"><i class="bi bi-people-fill me-1"></i> 2 voyageurs</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-house-door me-1"></i> Hôtel réservé</span>
+              </div>
+            </div>
+          @else
+            <div class="text-center p-5">
+              <i class="bi bi-calendar-plus display-4 text-muted mb-3"></i>
+              <h4>Planifiez votre prochain voyage</h4>
+              <p class="text-muted mb-4">Créez un itinéraire personnalisé et commencez votre aventure</p>
+              <a href="{{ route('tourist.plan') }}" class="btn btn-primary">Commencer la planification</a>
+            </div>
+          @endif
+        </div>
+      </div>
+
+      <!-- Événements à venir -->
+      <div class="dashboard-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-calendar-event me-2"></i>Événements à venir</span>
+          <a href="{{ route('events.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            @forelse(($events ?? collect())->take(5) as $event)
+              <a href="{{ route('events.show', $event) }}" class="list-group-item list-group-item-action p-3 event-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <div class="me-3 text-center" style="min-width: 50px;">
+                      <div class="fw-bold text-primary">{{ \Carbon\Carbon::parse($event->starts_at ?? $event->start_date)->format('d') }}</div>
+                      <div class="small text-muted">{{ \Carbon\Carbon::parse($event->starts_at ?? $event->start_date)->locale('fr')->shortMonthName }}</div>
+                    </div>
+                    <div>
+                      <h6 class="mb-0">{{ $event->title ?? $event->name ?? 'Événement' }}</h6>
+                      <div class="text-muted small">
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ $event->city ?? $event->location ?? 'Lieu non spécifié' }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="badge bg-light text-dark">
+                    {{ \Carbon\Carbon::parse($event->starts_at ?? $event->start_date)->format('H:i') }}
+                  </div>
+                </div>
+              </a>
+            @empty
+              <div class="text-center p-4">
+                <i class="bi bi-calendar-x text-muted display-6 mb-3"></i>
+                <p class="text-muted mb-0">Aucun événement à venir pour le moment</p>
+              </div>
+            @endforelse
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Météo -->
+      <div class="dashboard-card mb-4">
+        <div class="weather-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-0">Ouagadougou</h5>
+              <small class="opacity-75">Mise à jour il y a 10 min</small>
+            </div>
+            <div class="text-end">
+              <div class="temp">32°C</div>
+              <div class="weather-desc">Ensoleillé</div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between text-center">
+            <div>
+              <div class="small">Demain</div>
+              <i class="bi bi-cloud-sun"></i>
+              <div class="small">31°C</div>
+            </div>
+            <div>
+              <div class="small">Après-demain</div>
+              <i class="bi bi-cloud-lightning-rain"></i>
+              <div class="small">28°C</div>
+            </div>
+            <div>
+              <div class="small">Ven.</div>
+              <i class="bi bi-cloud-sun"></i>
+              <div class="small">30°C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carte interactive -->
+      <div class="dashboard-card mb-4">
+        <div class="card-header">
+          <i class="bi bi-map me-2"></i>Explorez les alentours
+        </div>
+        <div class="card-body p-0">
+          <div class="location-card">
+            <div id="miniMap" style="height: 200px; width: 100%;"></div>
+            <div class="p-3">
+              <p class="mb-3">Découvrez les lieux d'intérêt autour de vous en temps réel avec notre carte interactive.</p>
+              <div class="d-grid gap-2">
+                <a href="{{ route('explore.map') }}" class="btn btn-primary">
+                  <i class="bi bi-compass me-1"></i> Ouvrir la carte complète
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques de voyage -->
+      <div class="dashboard-card mb-4">
+        <div class="card-header">
+          <i class="bi bi-graph-up me-2"></i>Vos statistiques
+        </div>
+        <div class="card-body">
+          <div class="row g-3 text-center">
+            <div class="col-4">
+              <div class="stats-card">
+                <i class="bi bi-geo-alt text-primary"></i>
+                <div class="number">12</div>
+                <div class="label">Villes</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stats-card">
+                <i class="bi bi-star text-primary"></i>
+                <div class="number">8</div>
+                <div class="label">Expériences</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stats-card">
+                <i class="bi bi-camera text-primary"></i>
+                <div class="number">24</div>
+                <div class="label">Photos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions rapides -->
+      <div class="dashboard-card mb-4">
+        <div class="card-header">
+          <i class="bi bi-lightning-charge me-2"></i>Actions rapides
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <a href="{{ route('air.flights.wizard') }}" class="list-group-item list-group-item-action">
+              <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                  <i class="bi bi-airplane text-primary"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Réserver un vol</h6>
+                  <small class="text-muted">Trouvez les meilleurs vols</small>
+                </div>
+              </div>
+            </a>
+            <a href="{{ route('tourist.hotels.index') }}" class="list-group-item list-group-item-action">
+              <div class="d-flex align-items-center">
+                <div class="bg-success bg-opacity-10 p-2 rounded me-3">
+                  <i class="bi bi-building text-success"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Trouver un hôtel</h6>
+                  <small class="text-muted">Réservez votre hébergement</small>
+                </div>
+              </div>
+            </a>
+            <a href="{{ route('transport.taxi.index') }}" class="list-group-item list-group-item-action">
+              <div class="d-flex align-items-center">
+                <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
+                  <i class="bi bi-taxi-front text-warning"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Réserver un taxi</h6>
+                  <small class="text-muted">Déplacez-vous facilement</small>
+                </div>
+              </div>
+            </a>
+            <a href="{{ route('tourist.community') }}" class="list-group-item list-group-item-action">
+              <div class="d-flex align-items-center">
+                <div class="bg-info bg-opacity-10 p-2 rounded me-3">
+                  <i class="bi bi-people text-info"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Communauté</h6>
+                  <small class="text-muted">Rencontrez d'autres voyageurs</small>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conseils locaux -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <i class="bi bi-lightbulb me-2"></i>Conseils locaux
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info d-flex align-items-start">
+            <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+            <div>
+              <strong>Bonne adresse</strong>
+              <p class="mb-0">Essayez le restaurant "La Paisible" pour une délicieuse cuisine locale.</p>
+            </div>
+          </div>
+          <div class="alert alert-warning d-flex align-items-start">
+            <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+            <div>
+              <strong>À éviter</strong>
+              <p class="mb-0">Évitez la circulation aux heures de pointe (7h-9h et 17h-19h).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Barre de navigation inférieure -->
+<nav class="fixed-bottom bg-white shadow-lg d-lg-none">
+  <div class="container">
+    <div class="row g-0">
+      <div class="col">
+        <a href="#" class="d-flex flex-column align-items-center justify-content-center p-3 text-primary">
+          <i class="bi bi-house-door-fill fs-5"></i>
+          <small>Accueil</small>
+        </a>
+      </div>
+      <div class="col">
+        <a href="{{ route('explore.map') }}" class="d-flex flex-column align-items-center justify-content-center p-3 text-muted">
+          <i class="bi bi-compass fs-5"></i>
+          <small>Explorer</small>
+        </a>
+      </div>
+      <div class="col">
+        <a href="#" class="d-flex flex-column align-items-center justify-content-center p-3 text-muted">
+          <i class="bi bi-heart fs-5"></i>
+          <small>Favoris</small>
+        </a>
+      </div>
+      <div class="col">
+        <a href="{{ route('profile.show') }}" class="d-flex flex-column align-items-center justify-content-center p-3 text-muted">
+          <i class="bi bi-person fs-5"></i>
+          <small>Profil</small>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  // Initialize map when document is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize mini map
+    if (document.getElementById('miniMap')) {
+      const map = L.map('miniMap', {
+        zoomControl: false,
+        scrollWheelZoom: false,
+        dragging: false,
+        tap: false
+      }).setView([12.3714, -1.5197], 13);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        className: 'map-tiles'
+      }).addTo(map);
+      
+      // Custom icon
+      const userIcon = L.divIcon({
+        html: '<div class="user-location-marker"><i class="bi bi-geo-fill"></i></div>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+        className: 'user-location-icon'
+      });
+      
+      // Add a marker for user's location
+      L.marker([12.3714, -1.5197], {icon: userIcon})
+        .addTo(map)
+        .bindPopup('Votre position actuelle')
+        .openPopup();
+      
+      // Add some points of interest
+      const poiIcon = L.divIcon({
+        html: '<div class="poi-marker"><i class="bi bi-geo-alt-fill"></i></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        className: 'poi-icon'
+      });
+      
+      // Sample points of interest
+      const pois = [
+        {lat: 12.3814, lng: -1.5197, title: 'Musée National'},
+        {lat: 12.3714, lng: -1.5097, title: 'Marché de Ouaga'},
+        {lat: 12.3614, lng: -1.5297, title: 'Parc Bangr-Weoogo'}
+      ];
+      
+      // Add POIs to map
+      pois.forEach(poi => {
+        L.marker([poi.lat, poi.lng], {icon: poiIcon})
+          .addTo(map)
+          .bindPopup(poi.title);
+      });
+    }
+    
+    // Add animation to cards on scroll
+    const animateOnScroll = () => {
+      const cards = document.querySelectorAll('.dashboard-card');
+      cards.forEach((card, index) => {
+        const cardTop = card.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        if (cardTop < windowHeight - 100) {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }
+      });
+    };
+    
+    // Initial check
+    animateOnScroll();
+    
+    // Check on scroll
+    window.addEventListener('scroll', animateOnScroll);
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  });
+</script>
+<style>
+  /* Styles for the map */
+  .user-location-marker {
+    color: #4361ee;
+    font-size: 24px;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  }
+  
+  .poi-marker {
+    color: #e63946;
+    font-size: 18px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Bottom navigation styles */
+  .fixed-bottom {
+    z-index: 1030;
+  }
+  
+  .fixed-bottom a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .fixed-bottom a:hover, .fixed-bottom a.active {
+    color: #4361ee;
+  }
+  
+  .fixed-bottom a i {
+    margin-bottom: 2px;
+  }
+  
+  .fixed-bottom small {
+    font-size: 0.7rem;
+  }
+  
+  /* Animation for cards */
+  .dashboard-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 767.98px) {
+    .dashboard-container {
+      padding-bottom: 70px;
+    }
+    
+    .fixed-bottom {
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+  }
+</style>
+@endpush
+@endsection

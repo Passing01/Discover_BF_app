@@ -29,20 +29,30 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        if ($user && $user->role !== 'tourist' && empty($user->role_onboarded_at)) {
+        
+        // Vérifier si l'utilisateur est un administrateur
+        if ($user->hasRole('admin')) {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+        
+        // Gestion de l'onboarding pour les autres rôles
+        if ($user->role !== 'tourist' && empty($user->role_onboarded_at)) {
             return redirect()->route('onboarding.start');
         }
 
-        // Redirect tourists to their dashboard by default after login
-        if ($user && $user->role === 'tourist') {
-            return redirect()->intended(route('tourist.dashboard', absolute: false));
+        // Redirection en fonction du rôle
+        switch ($user->role) {
+            case 'tourist':
+                return redirect()->intended(route('tourist.dashboard', absolute: false));
+            case 'guide':
+                return redirect()->intended(route('guide.dashboard', absolute: false));
+            case 'event_organizer':
+                return redirect()->intended(route('organizer.dashboard', absolute: false));
+            case 'hotel_manager':
+                return redirect()->intended(route('hotel.manager.dashboard', absolute: false));
+            default:
+                return redirect()->intended('/');
         }
-
-        if ($user && $user->role === 'admin') {
-            return redirect()->intended(route('dashboard', absolute: false));
-        }
-
-        return redirect()->intended('/');
     }
 
     /**

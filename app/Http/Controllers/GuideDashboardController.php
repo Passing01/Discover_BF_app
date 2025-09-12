@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Guide;
 use App\Models\TourBooking;
 use App\Models\EventBooking;
@@ -21,8 +22,18 @@ class GuideDashboardController extends Controller
         $contacts = collect();
 
         if ($guide) {
-            $tourBookings = TourBooking::where('guide_id', $guide->id)->latest()->take(10)->get();
-            $eventBookings = EventBooking::where('guide_id', $guide->id)->latest()->take(10)->get();
+            // Récupérer les réservations de tour via la relation avec les tours du guide
+            $tourBookings = TourBooking::whereHas('tour', function($query) use ($guide) {
+                $query->where('guide_id', $guide->id);
+            })->with('tour')->latest()->take(10)->get();
+
+            // Récupérer les réservations d'événement (si la relation existe)
+            if (Schema::hasColumn('event_bookings', 'guide_id')) {
+                $eventBookings = EventBooking::where('guide_id', $guide->id)
+                    ->latest()
+                    ->take(10)
+                    ->get();
+            }
         }
 
         // GuideContact stores guide_id as the User id for the guide (see TouristSiteController)
@@ -34,6 +45,50 @@ class GuideDashboardController extends Controller
         return view('guide.dashboard', compact('user', 'guide', 'tourBookings', 'eventBookings', 'contacts'));
     }
 
+    /**
+     * Affiche la liste des messages reçus par le guide
+     */
+    public function messages()
+    {
+        $user = Auth::user();
+        $contacts = GuideContact::where('guide_id', $user->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('guide.messages.index', compact('contacts'));
+    }
+
+    /**
+     * Affiche un message spécifique
+     */
+    public function showMessage($id)
+    {
+        $contact = GuideContact::where('id', $id)
+            ->where('guide_id', Auth::id())
+            ->firstOrFail();
+
+        // Marquer le message comme lu
+        if ($contact->status === 'new') {
+            $contact->update(['status' => 'read']);
+        }
+
+        return view('guide.messages.show', compact('contact'));
+    }
+
+    /**
+     * Marquer un message comme lu
+     */
+    public function markAsRead($id)
+    {
+        $contact = GuideContact::where('id', $id)
+            ->where('guide_id', Auth::id())
+            ->firstOrFail();
+
+        $contact->update(['status' => 'read']);
+
+        return back()->with('status', 'Message marqué comme lu.');
+    }
+
     public function updateAvailability(Request $request)
     {
         $data = $request->validate([
@@ -42,10 +97,19 @@ class GuideDashboardController extends Controller
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $guide = Guide::firstOrCreate(
-            ['user_id' => Auth::id()],
-            ['name' => Auth::user()->name ?? 'Guide', 'bio' => '']
-        );
+        // Vérifier si le guide existe déjà
+        $guide = Guide::where('user_id', Auth::id())->first();
+        
+        if (!$guide) {
+            // Créer un nouveau guide avec des valeurs par défaut
+            $guide = new Guide();
+            $guide->user_id = Auth::id();
+            $guide->spoken_languages = ['fr'];
+            $guide->hourly_rate = 0;
+            $guide->description = 'Nouveau guide';
+            $guide->certified = false;
+            $guide->save();
+        }
 
         // Persist minimal availability on the guide (if columns exist) or stash in session as fallback
         if ($guide->fillable && (in_array('available_from', $guide->getFillable()) || $guide->isFillable('available_from'))) {

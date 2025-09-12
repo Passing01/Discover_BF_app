@@ -18,6 +18,7 @@ use App\Http\Controllers\TouristBookingController;
 use App\Http\Controllers\AgencyBookingController;
 use App\Http\Controllers\TaxiController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\SiteManagerDashboardController;
 use App\Http\Controllers\BusBookingController;
 use App\Http\Controllers\FlightController;
 use App\Http\Controllers\TravelAssistantController;
@@ -71,6 +72,29 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified', 'active'])->name('dashboard');
 
 Route::middleware(['auth','active'])->group(function () {
+    // Routes pour les gestionnaires de sites
+    Route::prefix('site-manager')->name('site-manager.')->middleware(['site_manager'])->group(function () {
+        // Tableau de bord
+        Route::get('/dashboard', [SiteManagerDashboardController::class, 'index'])->name('dashboard');
+        
+        // Gestion des sites
+        Route::resource('sites', 'App\Http\Controllers\SiteManagerSiteController');
+        Route::post('sites/{site}/toggle-status', [SiteManagerSiteController::class, 'toggleStatus'])->name('sites.toggle-status');
+        
+        // Gestion des réservations
+        Route::get('bookings', [SiteManagerBookingController::class, 'index'])->name('bookings.index');
+        Route::get('bookings/{booking}', [SiteManagerBookingController::class, 'show'])->name('bookings.show');
+        Route::put('bookings/{booking}/status', [SiteManagerBookingController::class, 'updateStatus'])->name('bookings.update-status');
+        Route::get('calendar', [SiteManagerBookingController::class, 'calendar'])->name('calendar');
+        Route::get('calendar/events', [SiteManagerBookingController::class, 'calendarEvents'])->name('calendar.events');
+        Route::get('bookings/export', [SiteManagerBookingController::class, 'export'])->name('bookings.export');
+        
+        // Profil
+        Route::get('/profile', [SiteManagerProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [SiteManagerProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [SiteManagerProfileController::class, 'updatePassword'])->name('profile.password.update');
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -109,13 +133,42 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/tourist/bookings/{booking}', [TouristBookingController::class, 'show'])->name('tourist.bookings.show');
     Route::post('/tourist/bookings/{booking}/cancel', [TouristBookingController::class, 'cancel'])->name('tourist.bookings.cancel');
 
-    // Guide web flow
-    Route::prefix('guide')->name('guide.')->middleware('guide')->group(function () {
+    // Routes pour les gestionnaires de sites
+    Route::prefix('site-manager')->name('site-manager.')->middleware(['auth', 'active', 'site_manager'])->group(function () {
+        // Tableau de bord
+        Route::get('/dashboard', [SiteManagerDashboardController::class, 'index'])->name('dashboard');
+        
+        // Profil
+        Route::get('/profile', [\App\Http\Controllers\SiteManagerProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [\App\Http\Controllers\SiteManagerProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [\App\Http\Controllers\SiteManagerProfileController::class, 'updatePassword'])->name('profile.password.update');
+        
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\SiteManagerNotificationController::class, 'index'])->name('notifications.index');
+        Route::put('/notifications/preferences', [\App\Http\Controllers\SiteManagerNotificationController::class, 'updatePreferences'])->name('notifications.preferences.update');
+        Route::post('/notifications/mark-all-read', [\App\Http\Controllers\SiteManagerNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+        Route::post('/notifications/{notification}/mark-read', [\App\Http\Controllers\SiteManagerNotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+        Route::post('/notifications/subscribe-push', [\App\Http\Controllers\SiteManagerNotificationController::class, 'subscribePush'])->name('notifications.push.subscribe');
+        
+        // Paramètres
+        Route::get('/settings/dashboard', [\App\Http\Controllers\SiteManagerSettingsController::class, 'index'])->name('settings.dashboard');
+        Route::put('/settings/dashboard', [\App\Http\Controllers\SiteManagerSettingsController::class, 'update'])->name('settings.dashboard.update');
+        Route::post('/settings/dashboard/reset', [\App\Http\Controllers\SiteManagerSettingsController::class, 'resetToDefaults'])->name('settings.dashboard.reset');
+        Route::put('/settings/theme', [\App\Http\Controllers\SiteManagerSettingsController::class, 'updateTheme'])->name('settings.theme.update');
+        Route::put('/settings/timezone', [\App\Http\Controllers\SiteManagerSettingsController::class, 'updateTimezone'])->name('settings.timezone.update');
+        Route::get('/settings/export', [\App\Http\Controllers\SiteManagerSettingsController::class, 'export'])->name('settings.export');
+    });
+
+    // Routes pour les guides
+    Route::prefix('guide')->name('guide.')->middleware(['auth', 'active', 'guide'])->group(function () {
         Route::get('/dashboard', [GuideDashboardController::class, 'index'])->name('dashboard');
         Route::post('/availability', [GuideDashboardController::class, 'updateAvailability'])->name('availability.update');
-        Route::get('/messages', [GuideDashboardController::class, 'messagesIndex'])->name('messages.index');
-        Route::post('/messages/{contact}/read', [GuideDashboardController::class, 'messagesMarkRead'])->name('messages.read');
-        Route::post('/messages/{contact}/close', [GuideDashboardController::class, 'messagesClose'])->name('messages.close');
+        
+        // Routes pour la messagerie des guides
+        Route::get('/messages', [GuideDashboardController::class, 'messages'])->name('messages.index');
+        Route::get('/messages/{contact}', [GuideDashboardController::class, 'showMessage'])->name('messages.show');
+        Route::post('/messages/{contact}/read', [GuideDashboardController::class, 'markAsRead'])->name('messages.read');
+
         Route::get('/profile', [GuideDashboardController::class, 'editProfile'])->name('profile.edit');
         Route::post('/profile', [GuideDashboardController::class, 'updateProfile'])->name('profile.update');
     });
@@ -186,7 +239,26 @@ Route::middleware(['auth','active'])->group(function () {
     // Role dashboards (auth protected; each controller enforces role)
     Route::middleware('auth')->group(function () {
         Route::get('/organizer/dashboard', [\App\Http\Controllers\OrganizerDashboardController::class, 'index'])->name('organizer.dashboard');
-        Route::get('/hotel/dashboard', [\App\Http\Controllers\HotelManagerDashboardController::class, 'index'])->name('hotel.dashboard');
+        
+        // Routes pour les gestionnaires d'hôtel
+        Route::prefix('hotel-manager')->name('hotel-manager.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\HotelManagerController::class, 'dashboard'])->name('dashboard');
+            Route::get('/hotels', [\App\Http\Controllers\HotelManagerController::class, 'index'])->name('hotels.index');
+            Route::get('/hotels/create', [\App\Http\Controllers\HotelManagerController::class, 'create'])->name('hotels.create');
+            Route::post('/hotels', [\App\Http\Controllers\HotelManagerController::class, 'store'])->name('hotels.store');
+            Route::get('/hotels/{hotel}', [\App\Http\Controllers\HotelManagerController::class, 'show'])->name('hotels.show');
+            Route::get('/hotels/{hotel}/edit', [\App\Http\Controllers\HotelManagerController::class, 'edit'])->name('hotels.edit');
+            Route::patch('/hotels/{hotel}', [\App\Http\Controllers\HotelManagerController::class, 'update'])->name('hotels.update');
+            Route::get('/hotels/{hotel}/rooms/create', [\App\Http\Controllers\HotelManagerController::class, 'createRoom'])->name('rooms.create');
+            Route::post('/hotels/{hotel}/rooms', [\App\Http\Controllers\HotelManagerController::class, 'store'])->name('rooms.store');
+            Route::get('/rooms', [\App\Http\Controllers\HotelManagerController::class, 'rooms'])->name('rooms.index');
+            Route::get('/bookings', [\App\Http\Controllers\HotelManagerController::class, 'bookings'])->name('bookings.index');
+            Route::get('/calendar', [\App\Http\Controllers\HotelManagerController::class, 'calendar'])->name('calendar');
+            Route::get('/reports', [\App\Http\Controllers\HotelManagerController::class, 'reports'])->name('reports.index');
+            Route::post('/hotels/{hotel}/toggle-status', [\App\Http\Controllers\HotelManagerController::class, 'toggleStatus'])->name('hotels.toggle-status');
+            Route::post('/hotels/{hotel}/toggle-featured', [\App\Http\Controllers\HotelManagerController::class, 'toggleFeatured'])->name('hotels.toggle-featured');
+        });
+        
         Route::get('/driver/dashboard', [\App\Http\Controllers\DriverDashboardController::class, 'index'])->name('driver.dashboard');
     });
 
@@ -248,6 +320,10 @@ Route::middleware(['auth','active'])->group(function () {
     Route::patch('/agency/hotels/{hotel}', [HotelAgencyController::class, 'update'])->name('agency.hotels.update');
     Route::get('/agency/hotels/{hotel}/rooms/create', [HotelAgencyController::class, 'createRoom'])->name('agency.rooms.create');
     Route::post('/agency/hotels/{hotel}/rooms', [HotelAgencyController::class, 'storeRoom'])->name('agency.rooms.store');
+    
+    // Gestion des clients de l'hôtel
+    Route::get('/agency/hotels/{hotel}/customers', [\App\Http\Controllers\HotelManager\CustomerController::class, 'index'])->name('agency.hotels.customers.index');
+    Route::get('/agency/hotels/{hotel}/customers/{user}', [\App\Http\Controllers\HotelManager\CustomerController::class, 'show'])->name('agency.hotels.customers.show');
 
     // Agency: Reservations management
     Route::get('/agency/reservations', [AgencyBookingController::class, 'index'])->name('agency.reservations.index');

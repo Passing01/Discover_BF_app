@@ -7,14 +7,23 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\HasDatabaseNotifications;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasUuids, SoftDeletes, HasRoles;
+    use HasFactory, Notifiable, HasUuids, SoftDeletes, HasRoles, HasDatabaseNotifications;
 
     public $incrementing = false;
     protected $keyType = 'string';
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -72,6 +81,11 @@ class User extends Authenticatable
         return $this->hasMany(HotelBooking::class);
     }
 
+    public function managedHotels()
+    {
+        return $this->hasMany(Hotel::class, 'manager_id');
+    }
+
     public function rides()
     {
         return $this->hasMany(Ride::class);
@@ -107,10 +121,6 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class);
     }
 
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
 
     public function isAdmin()
     {
@@ -132,5 +142,18 @@ class User extends Authenticatable
     {
         $full = trim(($this->first_name ?? '').' '.($this->last_name ?? ''));
         return $full !== '' ? $full : ($this->attributes['email'] ?? '');
+    }
+
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Get all sites managed by this user.
+     */
+    public function managedSites()
+    {
+        return $this->hasMany(Site::class, 'manager_id');
     }
 }

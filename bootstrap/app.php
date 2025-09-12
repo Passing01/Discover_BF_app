@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guide' => \App\Http\Middleware\EnsureUserIsGuide::class,
             'tourist' => EnsureUserIsTourist::class,
             'admin' => EnsureUserIsAdmin::class,
+            'site_manager' => \App\Http\Middleware\SiteManager::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

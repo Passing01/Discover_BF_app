@@ -49,7 +49,9 @@ class AuthenticatedSessionController extends Controller
             case 'event_organizer':
                 return redirect()->intended(route('organizer.dashboard', absolute: false));
             case 'hotel_manager':
-                return redirect()->intended(route('hotel.manager.dashboard', absolute: false));
+                return redirect()->intended(route('hotel-manager.dashboard', absolute: false));
+            case 'site_manager':
+                return redirect()->intended(route('site-manager.dashboard', absolute: false));
             default:
                 return redirect()->intended('/');
         }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Review;
 
 class Hotel extends Model
 {
@@ -56,5 +57,18 @@ class Hotel extends Model
     public function bookings()
     {
         return $this->hasManyThrough(HotelBooking::class, Room::class);
+    }
+
+    public function activeBookings()
+    {
+        return $this->hasManyThrough(
+            HotelBooking::class, 
+            Room::class
+        )->whereIn('status', ['pending', 'confirmed', 'checked_in']);
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
     }
 }

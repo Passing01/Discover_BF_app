@@ -150,7 +150,27 @@
     @else
       <div class="mb-2 title small text-uppercase text-muted">Actions rapides</div>
       <nav class="vstack gap-1">
-        <a href="{{ route('tourist.dashboard') }}" class="@if(request()->routeIs('tourist.dashboard')) active @endif"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+        @php
+            $dashboardRoute = 'tourist.dashboard';
+            $isDashboardActive = false;
+            if (auth()->check()) {
+                switch(auth()->user()->role) {
+                    case 'guide':
+                        $dashboardRoute = 'guide.dashboard';
+                        $isDashboardActive = request()->routeIs('guide.dashboard');
+                        break;
+                    case 'event_organizer':
+                        $dashboardRoute = 'organizer.events.index';
+                        $isDashboardActive = request()->routeIs('organizer.events.index');
+                        break;
+                    default:
+                        $isDashboardActive = request()->routeIs('tourist.dashboard');
+                }
+            } else {
+                $isDashboardActive = request()->routeIs('tourist.dashboard');
+            }
+        @endphp
+        <a href="{{ route($dashboardRoute) }}" class="{{ $isDashboardActive ? 'active' : '' }}"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
         <a href="{{ route('assistant.index') }}" class="@if(request()->routeIs('assistant.*')) active @endif"><i class="bi bi-robot"></i> Planifier un voyage</a>
         <a href="{{ route('tourist.itinerary') }}" class="@if(request()->routeIs('tourist.itinerary')) active @endif"><i class="bi bi-map"></i> Itinéraire</a>
         <a href="{{ route('air.flights.index') }}" class="@if(request()->routeIs('air.flights.*')) active @endif"><i class="bi bi-airplane"></i> Vols</a>
@@ -226,7 +246,27 @@
         @yield('tourist_sidenav')
       @else
         <nav class="vstack gap-1">
-          <a href="{{ route('tourist.dashboard') }}" class="@if(request()->routeIs('tourist.dashboard')) active @endif"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+          @php
+            $dashboardRoute = 'tourist.dashboard';
+            $isDashboardActive = false;
+            if (auth()->check()) {
+                switch(auth()->user()->role) {
+                    case 'guide':
+                        $dashboardRoute = 'guide.dashboard';
+                        $isDashboardActive = request()->routeIs('guide.dashboard');
+                        break;
+                    case 'event_organizer':
+                        $dashboardRoute = 'organizer.events.index';
+                        $isDashboardActive = request()->routeIs('organizer.events.index');
+                        break;
+                    default:
+                        $isDashboardActive = request()->routeIs('tourist.dashboard');
+                }
+            } else {
+                $isDashboardActive = request()->routeIs('tourist.dashboard');
+            }
+        @endphp
+        <a href="{{ route($dashboardRoute) }}" class="{{ $isDashboardActive ? 'active' : '' }}"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
           <a href="{{ route('assistant.index') }}" class="@if(request()->routeIs('assistant.*')) active @endif"><i class="bi bi-robot"></i> Planifier un voyage</a>
           <a href="{{ route('tourist.itinerary') }}" class="@if(request()->routeIs('tourist.itinerary')) active @endif"><i class="bi bi-map"></i> Itinéraire</a>
           <a href="{{ route('air.flights.index') }}" class="@if(request()->routeIs('air.flights.*')) active @endif"><i class="bi bi-airplane"></i> Vols</a>

@@ -110,7 +110,7 @@
               @elseif($role === 'hotel_manager')
                 <li class="dropdown"><a href="#"><span>Espace Hôtel</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
                   <ul>
-                    <li><a href="{{ route('hotel.dashboard') }}">Tableau de bord</a></li>
+                    <li><a href="{{ route('hotel-manager.dashboard') }}">Tableau de bord</a></li>
                     <li><a href="{{ route('agency.hotels.index') }}">Mes hôtels</a></li>
                     <li><a href="{{ route('agency.reservations.index') }}">Réservations</a></li>
                   </ul>

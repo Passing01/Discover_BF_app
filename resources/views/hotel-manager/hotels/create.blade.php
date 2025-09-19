@@ -132,39 +132,58 @@
                         </div>
                         
                         <div class="col-12">
-                            <label class="form-label">
-                                Photos <span class="text-danger">*</span>
-                            </label>
-                            <div class="border border-2 border-dashed rounded p-5 text-center">
-                                <i class="fas fa-images fa-3x text-muted mb-3"></i>
-                                <h6>Glissez et déposez vos images ici</h6>
-                                <p class="text-muted small mb-3">ou</p>
-                                <label for="photos" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-upload me-2"></i>
-                                    Sélectionner des fichiers
-                                    <input type="file" 
-                                           id="photos" 
-                                           name="photos[]" 
-                                           class="d-none" 
-                                           multiple 
-                                           accept="image/*" 
-                                           required>
+                            <!-- Photo principale -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    Photo principale <span class="text-danger">*</span>
                                 </label>
-                                <p class="small text-muted mt-2 mb-0">
-                                    Formats acceptés : JPG, PNG, JPEG (max 5 Mo par image)
-                                </p>
+                                <input type="file" 
+                                       id="main_photo" 
+                                       name="main_photo" 
+                                       class="form-control @error('main_photo') is-invalid @enderror" 
+                                       accept="image/*" 
+                                       required>
+                                <small class="form-text text-muted">Cette photo sera affichée en tant qu'image principale de votre hôtel</small>
+                                @error('main_photo')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
-                            
-                            <div id="image-preview" class="image-preview mt-3">
-                                <!-- Les aperçus des images seront ajoutés ici -->
+
+                            <!-- Galerie de photos -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Galerie de photos (optionnel)
+                                </label>
+                                <div class="border border-2 border-dashed rounded p-5 text-center">
+                                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                                    <h6>Glissez et déposez vos images ici</h6>
+                                    <p class="text-muted small mb-3">ou</p>
+                                    <label for="photos" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-upload me-2"></i>
+                                        Sélectionner des fichiers
+                                        <input type="file" 
+                                               id="photos" 
+                                               name="photos[]" 
+                                               class="d-none" 
+                                               multiple 
+                                               accept="image/*">
+                                    </label>
+                                    <p class="small text-muted mt-2 mb-0">
+                                        Formats acceptés : JPG, PNG, JPEG (max 5 Mo par image)
+                                    </p>
+                                </div>
+                                
+                                <div id="image-preview" class="row g-2 mt-3">
+                                    <!-- Les aperçus des images seront ajoutés ici -->
+                                </div>
+                                
+                                @error('photos')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                @error('photos.*')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
-                            
-                            @error('photos')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            @error('photos.*')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
                 </div>
@@ -617,52 +636,176 @@
             updateMarker(initialLat, initialLng);
             map.setView([initialLat, initialLng], 13);
 
-            // Gestion du téléchargement des images
-            const fileInput = document.getElementById('photos');
-            const imagePreview = document.getElementById('image-preview');
-            const dropZone = fileInput.closest('.border-dashed');
+            // Gestion des images
+            document.addEventListener('DOMContentLoaded', function() {
+                // Éléments du DOM
+                const mainPhotoInput = document.getElementById('main_photo');
+                const galleryInput = document.getElementById('photos');
+                const imagePreview = document.getElementById('image-preview');
+                const dropZone = document.querySelector('.border-dashed');
+                
+                // Vérification des éléments
+                if (!mainPhotoInput || !galleryInput || !imagePreview) {
+                    console.error('Erreur: Éléments du formulaire introuvables');
+                    return;
+                }
 
-            // Gestion du glisser-déposer
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, highlight, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, unhighlight, false);
-            });
-
-            function highlight() {
-                dropZone.classList.add('border-primary', 'bg-light');
-            }
-
-            function unhighlight() {
-                dropZone.classList.remove('border-primary', 'bg-light');
-            }
-
-            // Gérer le dépôt de fichiers
-            dropZone.addEventListener('drop', handleDrop, false);
-
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                handleFiles(files);
-            }
-
-            // Gestion de la sélection de fichiers
-            fileInput.addEventListener('change', function() {
-                handleFiles(this.files);
+                // Aperçu de la photo principale
+                mainPhotoInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    if (!file) return;
+                    
+                    // Vérification du type de fichier
+                    if (!file.type.startsWith('image/')) {
+                        alert('Veuillez sélectionner une image valide pour la photo principale.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Vérification de la taille (5 Mo max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('La photo principale ne doit pas dépasser 5 Mo.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Afficher un aperçu
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.className = 'mb-3';
+                        preview.innerHTML = `
+                            <div class="position-relative d-inline-block">
+                                <img src="${e.target.result}" class="img-thumbnail" style="width: 200px; height: 150px; object-fit: cover;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                        onclick="this.parentElement.parentElement.remove(); document.getElementById('main_photo').value = '';">
+                                    ×
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Supprimer l'ancien aperçu s'il existe
+                        const oldPreview = document.getElementById('main-photo-preview');
+                        if (oldPreview) oldPreview.remove();
+                        
+                        preview.id = 'main-photo-preview';
+                        mainPhotoInput.parentNode.insertBefore(preview, mainPhotoInput.nextSibling);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                
+                // Gestion de la galerie d'images
+                galleryInput.addEventListener('change', function() {
+                    if (!this.files || this.files.length === 0) return;
+                    
+                    // Parcourir chaque fichier
+                    Array.from(this.files).forEach(file => {
+                        // Vérification du type de fichier
+                        if (!file.type.startsWith('image/')) {
+                            showError(`Le fichier ${file.name} n'est pas une image valide.`);
+                            return;
+                        }
+                        
+                        // Vérification de la taille (5 Mo max)
+                        if (file.size > 5 * 1024 * 1024) {
+                            showError(`L'image ${file.name} dépasse la taille maximale de 5 Mo.`);
+                            return;
+                        }
+                        
+                        // Créer un aperçu
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-6 col-md-4 col-lg-3';
+                            col.innerHTML = `
+                                <div class="position-relative">
+                                    <img src="${e.target.result}" class="img-thumbnail w-100" style="height: 120px; object-fit: cover;">
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                            onclick="this.closest('.col-6').remove(); updateGalleryInput();">
+                                        ×
+                                    </button>
+                                </div>
+                            `;
+                            imagePreview.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    // Mettre à jour l'input de la galerie
+                    updateGalleryInput();
+                });
+                
+                // Fonction pour afficher les messages d'erreur
+                function showError(message) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    // Insérer l'alerte avant la zone de dépôt
+                    dropZone.parentNode.insertBefore(alertDiv, dropZone);
+                    
+                    // Supprimer l'alerte après 5 secondes
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                }
+                
+                // Mettre à jour l'input de la galerie avec les images restantes
+                window.updateGalleryInput = function() {
+                    const dataTransfer = new DataTransfer();
+                    
+                    // Récupérer les fichiers actuels
+                    const currentFiles = Array.from(galleryInput.files);
+                    
+                    // Garder les fichiers qui ont encore un aperçu
+                    const previews = imagePreview.querySelectorAll('img');
+                    currentFiles.forEach(file => {
+                        const hasPreview = Array.from(previews).some(img => 
+                            img.src.startsWith('data:') && 
+                            img.alt === file.name
+                        );
+                        
+                        if (hasPreview) {
+                            dataTransfer.items.add(file);
+                        }
+                    });
+                    
+                    // Mettre à jour l'input
+                    galleryInput.files = dataTransfer.files;
+                };
+                
+                // Gestion du glisser-déposer pour la galerie
+                if (dropZone) {
+                    // Événements de survol
+                    dropZone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        dropZone.classList.add('border-primary', 'bg-light');
+                    });
+                    
+                    dropZone.addEventListener('dragleave', () => {
+                        dropZone.classList.remove('border-primary', 'bg-light');
+                    });
+                    
+                    // Déposer les fichiers
+                    dropZone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        dropZone.classList.remove('border-primary', 'bg-light');
+                        
+                        if (e.dataTransfer.files.length) {
+                            galleryInput.files = e.dataTransfer.files;
+                            galleryInput.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
             });
 
             function handleFiles(files) {
+                console.log('Fichiers reçus:', files);
+                
                 // Vérifier le nombre de fichiers
                 const maxFiles = 10;
                 if (files.length > maxFiles) {
@@ -677,28 +820,54 @@
                         showAlert(`Le fichier ${files[i].name} dépasse la taille maximale de 5 Mo.`, 'danger');
                         return;
                     }
+                    
+                    // Vérifier le type de fichier
+                    if (!files[i].type.match('image.*')) {
+                        showAlert(`Le fichier ${files[i].name} n'est pas une image valide.`, 'danger');
+                        return;
+                    }
                 }
                 
-                // Mettre à jour l'input file
-                const dataTransfer = new DataTransfer();
-                for (let i = 0; i < files.length; i++) {
-                    dataTransfer.items.add(files[i]);
+                try {
+                    // Créer un nouveau DataTransfer pour gérer les fichiers
+                    const dataTransfer = new DataTransfer();
+                    
+                    // Ajouter les nouveaux fichiers
+                    for (let i = 0; i < files.length; i++) {
+                        dataTransfer.items.add(files[i]);
+                    }
+                    
+                    // Mettre à jour l'input file
+                    fileInput.files = dataTransfer.files;
+                    
+                    console.log('Fichiers après mise à jour:', fileInput.files);
+                    
+                    // Mettre à jour l'aperçu
+                    updateImagePreview();
+                } catch (error) {
+                    console.error('Erreur lors de la gestion des fichiers:', error);
+                    showAlert('Une erreur est survenue lors du chargement des images.', 'danger');
                 }
-                fileInput.files = dataTransfer.files;
-                
-                // Mettre à jour l'aperçu
-                updateImagePreview();
             }
 
             function updateImagePreview() {
+                console.log('Mise à jour de l\'aperçu des images');
+                
                 // Vider l'aperçu existant
                 imagePreview.innerHTML = '';
+                
+                // Vérifier s'il y a des fichiers
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    console.log('Aucun fichier à afficher');
+                    return;
+                }
                 
                 // Afficher les aperçus
                 for (let i = 0; i < fileInput.files.length; i++) {
                     const file = fileInput.files[i];
                     
                     if (!file.type.match('image.*')) {
+                        console.log('Fichier ignoré (pas une image):', file.name);
                         continue;
                     }
                     
@@ -709,34 +878,60 @@
                         previewItem.className = 'image-preview-item';
                         previewItem.innerHTML = `
                             <img src="${e.target.result}" alt="Preview" class="img-fluid">
-                            <div class="remove-image" data-index="${i}">
+                            <div class="remove-image" data-index="${i}" title="Supprimer cette image">
                                 <i class="fas fa-times"></i>
                             </div>
                         `;
                         imagePreview.appendChild(previewItem);
                         
                         // Gestion de la suppression d'image
-                        previewItem.querySelector('.remove-image').addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            removeImage(parseInt(this.getAttribute('data-index')));
-                        });
+                        const removeButton = previewItem.querySelector('.remove-image');
+                        if (removeButton) {
+                            removeButton.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                removeImage(parseInt(this.getAttribute('data-index')));
+                            });
+                        }
+                    };
+                    
+                    reader.onerror = function(error) {
+                        console.error('Erreur lors de la lecture du fichier:', file.name, error);
                     };
                     
                     reader.readAsDataURL(file);
+                    console.log('Prévisualisation du fichier:', file.name);
+                }
+                
+                // Afficher un message si aucune image valide n'a été trouvée
+                if (imagePreview.children.length === 0) {
+                    const noImagesMsg = document.createElement('div');
+                    noImagesMsg.className = 'text-muted';
+                    noImagesMsg.textContent = 'Aucune image valide sélectionnée';
+                    imagePreview.appendChild(noImagesMsg);
                 }
             }
 
             function removeImage(index) {
-                const newFiles = Array.from(fileInput.files);
-                newFiles.splice(index, 1);
-                
-                // Mettre à jour l'input file
-                const newFileList = new DataTransfer();
-                newFiles.forEach(file => newFileList.items.add(file));
-                fileInput.files = newFileList.files;
-                
-                // Mettre à jour l'aperçu
-                updateImagePreview();
+                try {
+                    console.log('Suppression de l\'image à l\'index:', index);
+                    
+                    // Créer un nouveau tableau de fichiers sans l'élément à supprimer
+                    const newFiles = Array.from(fileInput.files);
+                    newFiles.splice(index, 1);
+                    
+                    // Mettre à jour l'input file
+                    const newFileList = new DataTransfer();
+                    newFiles.forEach(file => newFileList.items.add(file));
+                    fileInput.files = newFileList.files;
+                    
+                    console.log('Nouvelle liste de fichiers:', fileInput.files);
+                    
+                    // Mettre à jour l'aperçu
+                    updateImagePreview();
+                } catch (error) {
+                    console.error('Erreur lors de la suppression de l\'image:', error);
+                    showAlert('Une erreur est survenue lors de la suppression de l\'image.', 'danger');
+                }
             }
 
             // Gestion des règles d'hôtel
@@ -841,22 +1036,27 @@
             });
             
             // Fonction utilitaire pour afficher des alertes
-            function showAlert(message, type, container = null) {
+            function showAlert(message, type = 'info', container = null) {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                
+                // Créer l'élément d'alerte
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
                 alertDiv.role = 'alert';
                 alertDiv.innerHTML = `
                     ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 `;
                 
-                if (container) {
-                    container.insertBefore(alertDiv, container.firstChild);
+                // Ajouter l'alerte au début du formulaire
+                const firstFormGroup = form.querySelector('.mb-5');
+                if (firstFormGroup) {
+                    form.insertBefore(alertDiv, firstFormGroup);
                 } else {
-                    form.insertBefore(alertDiv, form.firstChild);
+                    form.prepend(alertDiv);
                 }
                 
-                // Fermer automatiquement après 5 secondes
+                // Fermer automatiquement l'alerte après 5 secondes
                 setTimeout(() => {
                     const bsAlert = new bootstrap.Alert(alertDiv);
                     bsAlert.close();

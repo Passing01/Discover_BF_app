@@ -111,8 +111,8 @@ class HotelManagerController extends Controller
             'cancellation_policy' => 'required|string',
             'amenities' => 'array',
             'amenities.*' => 'exists:amenities,id',
-            'rules' => 'required|array|min:1',
-            'rules.*' => 'string|max:255',
+            'rules' => 'array',
+            'rules.*' => 'exists:rules,name',
             'main_photo' => 'required|image|max:5120',
             'photos.*' => 'image|max:5120',
         ]);

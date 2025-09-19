@@ -26,6 +26,8 @@ use App\Http\Controllers\TouristCalendarController;
 use App\Http\Controllers\TouristSiteController;
 use App\Http\Controllers\OrganizerProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SiteManagerSiteController;
+use App\Http\Controllers\SiteManagerBookingController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -397,6 +399,8 @@ require __DIR__.'/auth.php';
 
 // Inclure les routes de la communauté
 require __DIR__.'/community.php';
+
+require __DIR__.'/api.php';
 
 // Routes de la communauté
 Route::middleware(['auth'])->group(function () {

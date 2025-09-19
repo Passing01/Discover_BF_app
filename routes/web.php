@@ -400,7 +400,8 @@ require __DIR__.'/auth.php';
 // Inclure les routes de la communauté
 require __DIR__.'/community.php';
 
-require __DIR__.'/api.php';
+// Ne pas inclure les routes API ici. Elles sont déjà chargées par le RouteServiceProvider
+// avec le préfixe /api et le middleware approprié.
 
 // Routes de la communauté
 Route::middleware(['auth'])->group(function () {

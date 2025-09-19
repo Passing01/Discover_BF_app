@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\HotelBooking as Booking;
 use App\Models\Room;
 use Illuminate\Http\Request;

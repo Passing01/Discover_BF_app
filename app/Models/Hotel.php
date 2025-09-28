@@ -71,4 +71,14 @@ class Hotel extends Model
     {
         return $this->morphMany(Review::class, 'reviewable');
     }
+
+    /**
+     * Récupère les chambres disponibles pour réservation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function availableRooms()
+    {
+        return $this->hasMany(Room::class)->where('available', true);
+    }
 }

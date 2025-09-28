@@ -8,6 +8,7 @@ use App\Models\Hotel;
 use App\Policies\CommunityPostPolicy;
 use App\Policies\CommunityCommentPolicy;
 use App\Policies\HotelCustomerPolicy;
+use App\Policies\ClientPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -21,6 +22,7 @@ class AuthServiceProvider extends ServiceProvider
         CommunityPost::class => CommunityPostPolicy::class,
         CommunityComment::class => CommunityCommentPolicy::class,
         Hotel::class => HotelCustomerPolicy::class,
+        User::class => ClientPolicy::class,
     ];
 
     /**

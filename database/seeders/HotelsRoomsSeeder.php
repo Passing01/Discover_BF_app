@@ -71,6 +71,12 @@ class HotelsRoomsSeeder extends Seeder
                 'path' => 'https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop'
             ], [
                 'position' => 1,
+                'is_main' => true,
+                'original_name' => 'hotel_photo_'.($i+1).'.jpg',
+                'mime_type' => 'image/jpeg',
+                'size' => 1024 * 1024, // 1MB
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             // 20 rooms per hotel

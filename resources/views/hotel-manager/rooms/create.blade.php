@@ -19,7 +19,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('hotel-manager.rooms.store', $hotel) }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <form action="{{ route('hotels.rooms.store', $hotel) }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                     @csrf
 
                     <!-- Informations de base -->
@@ -44,16 +44,16 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="type" class="form-label fw-bold">
+                                <label for="room_type_id" class="form-label fw-bold">
                                     Type de chambre <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-tag"></i></span>
-                                    <select class="form-select" id="type" name="type" required>
+                                    <select class="form-select" id="room_type_id" name="room_type_id" required>
                                         <option value="">Sélectionnez un type</option>
-                                        @foreach($roomTypes as $type)
-                                            <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
-                                                {{ ucfirst($type) }}
+                                        @foreach($roomTypes as $roomType)
+                                            <option value="{{ $roomType->id }}" {{ old('room_type_id') == $roomType->id ? 'selected' : '' }}>
+                                                {{ $roomType->name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -69,6 +69,30 @@
                                     <span class="input-group-text"><i class="fas fa-align-left"></i></span>
                                     <textarea class="form-control" id="description" name="description" 
                                               rows="3" placeholder="Décrivez la chambre...">{{ old('description') }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="room_number" class="form-label fw-bold">
+                                    Numéro de chambre <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                    <input type="text" class="form-control" id="room_number" name="room_number" 
+                                           value="{{ old('room_number') }}" required>
+                                    <div class="invalid-feedback">Veuillez saisir un numéro de chambre.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="floor" class="form-label fw-bold">
+                                    Étage <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                    <input type="number" class="form-control" id="floor" name="floor" 
+                                           value="{{ old('floor') }}" min="-10" max="200" step="1" required>
+                                    <div class="invalid-feedback">Veuillez saisir un étage valide.</div>
                                 </div>
                             </div>
 
@@ -118,18 +142,25 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold">Photos de la chambre</label>
-                                <div class="border rounded p-4 text-center bg-light">
+                                <label class="form-label fw-bold">Photos de la chambre <span class="text-danger">*</span></label>
+                                <div class="border rounded p-4 bg-light">
                                     <div class="mb-3">
-                                        <i class="fas fa-cloud-upload-alt fa-4x text-primary"></i>
+                                        <input type="file" class="form-control" id="photos" name="photos[]" multiple required
+                                               accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                                        <div class="form-text mt-2">
+                                            <i class="fas fa-info-circle me-1"></i>Formats acceptés : JPG, PNG, GIF, WebP (max 5 Mo par fichier)
+                                        </div>
                                     </div>
-                                    <h5 class="mb-3">Glissez-déposez vos fichiers ici</h5>
-                                    <p class="text-muted mb-4">ou</p>
-                                    <input type="file" class="form-control d-none" id="photos" name="photos[]" multiple>
-                                    <label for="photos" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-upload me-2"></i>Choisir des fichiers
-                                    </label>
-                                    <div id="image-preview" class="mt-4 row g-3"></div>
+                                    @error('photos')
+                                        <div class="alert alert-danger mt-2">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>{{ $message }}
+                                        </div>
+                                    @enderror
+                                    @error('photos.*')
+                                        <div class="alert alert-danger mt-2">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>{{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -180,21 +211,29 @@
                                             <i class="fas fa-bed me-2 text-muted"></i>Configuration du lit
                                         </h5>
                                         <div class="mb-3">
-                                            <label for="bed_type" class="form-label fw-bold">Type de lit</label>
+                                            <label for="bed_type" class="form-label fw-bold">Type de lit <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="fas fa-bed"></i></span>
-                                                <select class="form-select" id="bed_type" name="bed_type">
+                                                <select class="form-select" id="bed_type" name="bed_type" required>
                                                     <option value="">Sélectionnez un type de lit</option>
-                                                    <option value="simple" {{ old('bed_type') == 'simple' ? 'selected' : '' }}>1 lit simple</option>
+                                                    <option value="single" {{ old('bed_type') == 'single' ? 'selected' : '' }}>1 lit simple</option>
                                                     <option value="double" {{ old('bed_type', 'double') == 'double' ? 'selected' : '' }}>1 lit double</option>
                                                     <option value="twin" {{ old('bed_type') == 'twin' ? 'selected' : '' }}>2 lits simples</option>
                                                     <option value="queen" {{ old('bed_type') == 'queen' ? 'selected' : '' }}>1 lit queen size</option>
                                                     <option value="king" {{ old('bed_type') == 'king' ? 'selected' : '' }}>1 lit king size</option>
-                                                    <option value="bunk" {{ old('bed_type') == 'bunk' ? 'selected' : '' }}>Lits superposés</option>
-                                                    <option value="sofa_bed" {{ old('bed_type') == 'sofa_bed' ? 'selected' : '' }}>Canapé-lit</option>
-                                                    <option value="custom" {{ old('bed_type') == 'custom' ? 'selected' : '' }}>Personnalisé</option>
+                                                    <option value="multiple" {{ old('bed_type') == 'multiple' ? 'selected' : '' }}>Plusieurs lits</option>
                                                 </select>
                                             </div>
+                                            <div class="invalid-feedback">Veuillez sélectionner un type de lit.</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="bed_count" class="form-label fw-bold">Nombre de lits <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-bed"></i></span>
+                                                <input type="number" class="form-control" id="bed_count" name="bed_count" value="{{ old('bed_count', 1) }}" min="1" max="10" step="1" required>
+                                            </div>
+                                            <div class="invalid-feedback">Veuillez saisir un nombre de lits valide.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -238,7 +277,7 @@
                                                 <span class="input-group-text"><i class="fas fa-ruler-combined"></i></span>
                                                 <input type="number" class="form-control" id="size" 
                                                        name="size" value="{{ old('size') }}" 
-                                                       min="0" step="0.5" placeholder="Ex: 25.5">
+                                                       min="1" step="1" placeholder="Ex: 25">
                                                 <span class="input-group-text">m²</span>
                                             </div>
                                             <div class="form-text">Laissez vide si non spécifié</div>
@@ -388,173 +427,26 @@
     </div>
 
     @push('scripts')
+    <!-- Script de validation du formulaire Bootstrap -->
     <script>
-        // Enable Bootstrap form validation
-        (function () {
-            'use strict'
-            
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.querySelectorAll('.needs-validation')
-            
-            // Loop over them and prevent submission
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-                        
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-        })()
-        
         document.addEventListener('DOMContentLoaded', function() {
-            // Gestion des images
-            const fileInput = document.getElementById('photos');
-            const imagePreview = document.getElementById('image-preview');
+            'use strict';
             
-            fileInput.addEventListener('change', function(e) {
-                // Vider l'aperçu existant
-                imagePreview.innerHTML = '';
-                
-                // Parcourir les fichiers sélectionnés
-                for (let i = 0; i < this.files.length; i++) {
-                    const file = this.files[i];
-                    
-                    // Vérifier le type de fichier
-                    if (!file.type.startsWith('image/')) continue;
-                    
-                    // Créer un aperçu de l'image
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const col = document.createElement('div');
-                        col.className = 'col-6 col-md-4 col-lg-3';
-                        col.innerHTML = `
-                            <div class="card position-relative">
-                                <img src="${e.target.result}" class="card-img-top" alt="Aperçu">
-                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1" 
-                                        data-index="${i}" style="width: 24px; height: 24px; line-height: 1;">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `;
-                        imagePreview.appendChild(col);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // Gestion de la suppression d'image
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('button[data-index]')) {
-                    e.preventDefault();
-                    const button = e.target.closest('button[data-index]');
-                    const index = button.dataset.index;
-                    
-                    // Créer un nouveau DataTransfer pour mettre à jour les fichiers
-                    const dataTransfer = new DataTransfer();
-                    const files = fileInput.files;
-                    
-                    // Ajouter tous les fichiers sauf celui à supprimer
-                    for (let i = 0; i < files.length; i++) {
-                        if (i !== parseInt(index)) {
-                            dataTransfer.items.add(files[i]);
-                        }
+            // Appliquer la validation à tous les formulaires avec la classe 'needs-validation'
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            // Empêcher la soumission des formulaires non valides
+            Array.from(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
                     }
                     
-                    // Mettre à jour l'input file
-                    fileInput.files = dataTransfer.files;
-                    
-                    // Mettre à jour l'aperçu
-                    const event = new Event('change');
-                    fileInput.dispatchEvent(event);
-                }
+                    form.classList.add('was-validated');
+                }, false);
             });
-
-            // Gestion de l'enregistrement comme brouillon
-            document.getElementById('save-as-draft')?.addEventListener('click', function() {
-                const form = this.closest('form');
-                const draftInput = document.createElement('input');
-                draftInput.type = 'hidden';
-                draftInput.name = 'is_draft';
-                draftInput.value = '1';
-                form.appendChild(draftInput);
-                form.submit();
-            });
-
-            // Mise à jour automatique de la capacité maximale
-            const capacityInput = document.getElementById('capacity');
-            const maxAdultsInput = document.getElementById('max_adults');
-            const maxChildrenInput = document.getElementById('max_children');
-
-            function updateMaxOccupancy() {
-                const capacity = parseInt(capacityInput.value) || 0;
-                if (maxAdultsInput) maxAdultsInput.max = capacity;
-                if (maxChildrenInput) {
-                    maxChildrenInput.max = Math.max(0, capacity - (parseInt(maxAdultsInput?.value) || 0));
-                }
-            }
-
-            if (capacityInput) capacityInput.addEventListener('change', updateMaxOccupancy);
-            if (maxAdultsInput) {
-                maxAdultsInput.addEventListener('change', function() {
-                    const capacity = parseInt(capacityInput?.value) || 0;
-                    const maxAdults = parseInt(this.value) || 0;
-                    if (maxChildrenInput) {
-                        maxChildrenInput.max = Math.max(0, capacity - maxAdults);
-                        
-                        // Ajuster le nombre d'enfants si nécessaire
-                        if ((parseInt(maxChildrenInput.value) || 0) > maxChildrenInput.max) {
-                            maxChildrenInput.value = maxChildrenInput.max;
-                        }
-                    requiredFields.forEach(field => {
-                        if (!field.value.trim()) {
-                            isValid = false;
-                            field.classList.add('border-red-500');
-                        } else {
-                            field.classList.remove('border-red-500');
-                        }
-                    });
-                    
-                    // Vérifier qu'au moins une photo est sélectionnée
-                    const fileInput = document.getElementById('photos');
-                    if (fileInput.files.length === 0) {
-                        isValid = false;
-                        fileInput.classList.add('border-red-500');
-                        
-                        // Afficher un message d'erreur
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'mt-2 text-sm text-red-600';
-                        errorDiv.textContent = 'Veuillez sélectionner au moins une photo.';
-                        
-                        // Vérifier si le message d'erreur n'existe pas déjà
-                        if (!fileInput.nextElementSibling || !fileInput.nextElementSibling.classList.contains('text-red-600')) {
-                            fileInput.parentNode.insertBefore(errorDiv, fileInput.nextSibling);
-                        }
-                    } else {
-                        fileInput.classList.remove('border-red-500');
-                        // Supprimer le message d'erreur s'il existe
-                        if (fileInput.nextElementSibling && fileInput.nextElementSibling.classList.contains('text-red-600')) {
-                            fileInput.nextElementSibling.remove();
-                        }
-                    }
-                    
-                    if (!isValid) {
-                        e.preventDefault();
-                        
-                        // Faire défiler jusqu'au premier champ invalide
-                        const firstInvalid = form.querySelector('.border-red-500');
-                        if (firstInvalid) {
-                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                        
-                        // Afficher un message d'erreur
-                        alert('Veuillez remplir tous les champs obligatoires.');
-                    }
-                });
-            });
-        </script>
+        });
+    </script>
     @endpush
 @endsection

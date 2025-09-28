@@ -6,6 +6,10 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApiTouristSiteController;
+use App\Http\Controllers\UserController;
+
+// Route pour récupérer les informations d'un utilisateur
+Route::get('/users/{user}', [UserController::class, 'show'])->middleware('auth:sanctum');
 
 // Routes pour les hôtels et réservations protégées par Sanctum
 Route::middleware('auth:sanctum')->group(function () {

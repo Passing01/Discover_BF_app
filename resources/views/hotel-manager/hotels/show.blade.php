@@ -9,65 +9,125 @@
             #map {
                 height: 400px;
                 width: 100%;
-                border-radius: 0.5rem;
+                border-radius: 8px;
+                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             }
             .amenity-icon {
                 margin-right: 0.5rem;
                 color: #4f46e5;
+            }
+            .card {
+                border: none;
+                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+                margin-bottom: 1.5rem;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .card-header {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                padding: 1rem 1.5rem;
+            }
+            .card-body {
+                padding: 1.5rem;
+            }
+            .hotel-title {
+                color: #2c3e50;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+            .hotel-subtitle {
+                color: #6c757d;
+                font-size: 0.9rem;
+            }
+            .btn-action {
+                margin-left: 0.5rem;
+                font-weight: 500;
+                transition: all 0.2s ease-in-out;
+            }
+            .btn-edit {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                color: #495057;
+            }
+            .btn-edit:hover {
+                background-color: #e9ecef;
+                color: #212529;
+            }
+            .btn-add {
+                background-color: #4f46e5;
+                color: white;
+            }
+            .btn-add:hover {
+                background-color: #4338ca;
+                color: white;
+            }
+            .info-label {
+                color: #6c757d;
+                font-weight: 500;
+            }
+            .info-value {
+                color: #2c3e50;
+            }
+            .section-title {
+                color: #4f46e5;
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin: 1.5rem 0 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid #f0f0f0;
             }
         </style>
     @endpush
 
     <div class="d-flex justify-content-end mb-4">
         <a href="{{ route('hotel-manager.hotels.edit', $hotel) }}" 
-           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-            </svg>
+           class="btn btn-action btn-edit d-flex align-items-center">
+            <i class="bi bi-pencil me-2"></i>
             Modifier
         </a>
-        <a href="{{ route('hotel-manager.rooms.create', ['hotel' => $hotel]) }}" 
-           class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
+        <a href="{{ route('hotels.rooms.create', ['hotel' => $hotel]) }}" 
+           class="btn btn-action btn-add d-flex align-items-center">
+            <i class="bi bi-plus-circle me-2"></i>
             Ajouter une chambre
         </a>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    <div class="card">
         <!-- En-tête avec statut et actions rapides -->
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <div>
-                <h3 class="h5 mb-0">
+                <h1 class="hotel-title">
                     {{ $hotel->name }}
-                </h3>
-                <p class="mb-0 text-muted">
-                    {{ $hotel->city }}, {{ $hotel->country }}
+                </h1>
+                <div class="hotel-subtitle">
+                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $hotel->city }}, {{ $hotel->country }}
                     @if($hotel->is_featured)
                         <span class="badge bg-warning text-dark ms-2">
-                            En vedette
+                            <i class="bi bi-star-fill me-1"></i>En vedette
                         </span>
                     @endif
                     @if(!$hotel->is_active)
                         <span class="badge bg-danger ms-2">
-                            Inactif
+                            <i class="bi bi-x-circle-fill me-1"></i>Inactif
                         </span>
                     @endif
-                </p>
+                </div>
             </div>
-            <div class="d-flex gap-2">
-                <form action="{{ route('hotel-manager.hotels.toggle-status', $hotel) }}" method="POST" class="d-inline">
+            <div class="d-flex">
+                <form action="{{ route('hotel-manager.hotels.toggle-status', $hotel) }}" method="POST" class="me-2">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <button type="submit" class="btn btn-sm {{ $hotel->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}">
+                        <i class="bi {{ $hotel->is_active ? 'bi-x-circle' : 'bi-check-circle' }} me-1"></i>
                         {{ $hotel->is_active ? 'Désactiver' : 'Activer' }}
                     </button>
                 </form>
-                <form action="{{ route('hotel-manager.hotels.toggle-featured', $hotel) }}" method="POST" class="d-inline">
+                <form action="{{ route('hotel-manager.hotels.toggle-featured', $hotel) }}" method="POST">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="btn btn-outline-warning btn-sm">
+                    <button type="submit" class="btn btn-sm {{ $hotel->is_featured ? 'btn-warning' : 'btn-outline-warning' }}">
+                        <i class="bi {{ $hotel->is_featured ? 'bi-star-fill' : 'bi-star' }} me-1"></i>
                         {{ $hotel->is_featured ? 'Retirer des vedettes' : 'Mettre en vedette' }}
                     </button>
                 </form>
@@ -76,14 +136,15 @@
 
         <!-- Galerie de photos -->
         @if($hotel->photos->isNotEmpty())
-            <div class="card-body p-4">
-                <div class="row g-3">
+            <div class="card-body p-0">
+                <div class="row g-0">
                     @foreach($hotel->photos as $index => $photo)
                         <div class="{{ $index === 0 ? 'col-12' : 'col-6 col-md-3' }}">
-                            <div class="ratio {{ $index === 0 ? 'ratio-16x9' : 'ratio-4x3' }} rounded overflow-hidden">
+                            <div class="ratio {{ $index === 0 ? 'ratio-16x9' : 'ratio-4x3' }} bg-light">
                                 <img src="{{ Storage::url($photo->path) }}" 
                                      alt="Photo de l'hôtel {{ $hotel->name }}" 
-                                     class="img-fluid object-fit-cover">
+                                     class="img-fluid h-100 w-100" 
+                                     style="object-fit: cover;">
                             </div>
                         </div>
                     @endforeach
@@ -92,112 +153,144 @@
         @endif
 
         <div class="card-body">
-            <dl class="row mb-0">
-                <!-- Informations générales -->
-                <div class="row py-3 border-bottom">
-                    <dt class="col-md-3 text-muted">
-                        Description
-                    </dt>
-                    <dd class="col-md-9">
-                        {{ $hotel->description }}
-                    </dd>
+            <h3 class="section-title">
+                <i class="bi bi-info-circle me-2"></i>Informations générales
+            </h3>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <p class="mb-0">{{ $hotel->description }}</p>
                 </div>
+            </div>
                 
-                <!-- Adresse et contact -->
-                <div class="row py-3 border-bottom">
-                    <dt class="col-md-3 text-muted">
-                        Adresse
-                    </dt>
-                    <dd class="col-md-9">
-                        <address class="mb-0">
-                            {{ $hotel->address }}<br>
-                            {{ $hotel->postal_code }} {{ $hotel->city }}<br>
-                            {{ $hotel->country }}
-                        </address>
-                        
-                        <!-- Carte -->
-                        @if($hotel->latitude && $hotel->longitude)
-                            <div id="map" class="mt-4"></div>
-                        @endif
-                    </dd>
+            <h3 class="section-title">
+                <i class="bi bi-geo-alt me-2"></i>Localisation
+            </h3>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>Adresse
+                            </h5>
+                            <address class="mb-0">
+                                {{ $hotel->address }}<br>
+                                {{ $hotel->postal_code }} {{ $hotel->city }}<br>
+                                {{ $hotel->country }}
+                            </address>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="row py-3 border-bottom">
-                    <dt class="col-md-3 text-muted">
-                        Contact
-                    </dt>
-                    <dd class="col-md-9">
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2">
-                                <a href="tel:{{ $hotel->phone }}" class="text-decoration-none text-dark">
-                                    <i class="bi bi-telephone text-muted me-2"></i>
-                                    {{ $hotel->phone }}
-                                </a>
-                            </li>
-                            <li class="mb-2">
-                                <a href="mailto:{{ $hotel->email }}" class="text-decoration-none text-dark">
-                                    <i class="bi bi-envelope text-muted me-2"></i>
-                                    {{ $hotel->email }}
-                                </a>
-                            </li>
-                            @if($hotel->website)
-                                <li>
-                                    <a href="{{ $hotel->website }}" target="_blank" class="text-decoration-none">
-                                        <i class="bi bi-globe text-muted me-2"></i>
-                                        {{ $hotel->website }}
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
-                    </dd>
-                </div>
-                
-                <!-- Horaires et politique d'annulation -->
-                <div class="row py-3 border-bottom">
-                    <dt class="col-md-3 text-muted">
-                        Horaires
-                    </dt>
-                    <dd class="col-md-9">
-                        <div class="row">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <p class="fw-bold mb-1">Heure d'arrivée :</p>
-                                <p class="mb-0">À partir de {{ $hotel->check_in_time }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="fw-bold mb-1">Heure de départ :</p>
-                                <p class="mb-0">Jusqu'à {{ $hotel->check_out_time }}</p>
+                @if($hotel->latitude && $hotel->longitude)
+                    <div class="col-md-8">
+                        <div class="card h-100">
+                            <div class="card-body p-0">
+                                <div id="map" class="h-100"></div>
                             </div>
                         </div>
-                        
-                        @if($hotel->cancellation_policy)
-                            <div class="mt-3">
-                                <p class="fw-bold mb-1">Politique d'annulation :</p>
-                                <p class="mb-0">{{ $hotel->cancellation_policy }}</p>
-                            </div>
-                        @endif
-                    </dd>
-                </div>
-                
-                <!-- Équipements -->
-                @if($hotel->amenities->isNotEmpty())
-                    <div class="row py-3 border-bottom">
-                        <dt class="col-md-3 text-muted">
-                            Équipements
-                        </dt>
-                        <dd class="col-md-9">
-                            <div class="row">
-                                @foreach($hotel->amenities as $amenity)
-                                    <div class="col-md-6 col-lg-4 mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <span class="amenity-icon">{!! $amenity->icon !!}</span>
-                                            <span>{{ $amenity->name }}</span>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </dd>
                     </div>
                 @endif
+            </div>
+                
+            <h3 class="section-title">
+                <i class="bi bi-telephone me-2"></i>Contact
+            </h3>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-telephone-fill me-2 text-primary"></i>Coordonnées
+                            </h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="bi bi-telephone-fill text-muted me-3"></i>
+                                    <a href="tel:{{ $hotel->phone }}" class="text-decoration-none text-dark">
+                                        {{ $hotel->phone }}
+                                    </a>
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <i class="bi bi-envelope-fill text-muted me-3"></i>
+                                    <a href="mailto:{{ $hotel->email }}" class="text-decoration-none text-dark">
+                                        {{ $hotel->email }}
+                                    </a>
+                                </li>
+                                @if($hotel->website)
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="bi bi-globe text-muted me-3"></i>
+                                        <a href="{{ $hotel->website }}" target="_blank" class="text-decoration-none">
+                                            {{ $hotel->website }}
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-clock-fill me-2 text-primary"></i>Horaires
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-box-arrow-in-right text-success me-2"></i>
+                                        <div>
+                                            <div class="small text-muted">Arrivée</div>
+                                            <div class="fw-bold">À partir de {{ $hotel->check_in_time }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-box-arrow-right text-danger me-2"></i>
+                                        <div>
+                                            <div class="small text-muted">Départ</div>
+                                            <div class="fw-bold">Jusqu'à {{ $hotel->check_out_time }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @if($hotel->cancellation_policy)
+                                <div class="mt-3 pt-3 border-top">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                                        Politique d'annulation
+                                    </h6>
+                                    <p class="mb-0 small">{{ $hotel->cancellation_policy }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+            @if($hotel->amenities->isNotEmpty())
+                <h3 class="section-title">
+                    <i class="bi bi-stars me-2"></i>Équipements et services
+                </h3>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    @foreach($hotel->amenities as $amenity)
+                                        <div class="col-md-4 col-sm-6 mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <span class="amenity-icon">{!! $amenity->icon !!}</span>
+                                                <span class="text-muted">{{ $amenity->name }}</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
                 
                 <!-- Règles de l'hôtel -->
                 @if($hotel->rules->isNotEmpty())

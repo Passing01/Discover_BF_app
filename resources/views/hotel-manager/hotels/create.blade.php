@@ -116,7 +116,6 @@
                             @enderror
                         </div>
                         
-                        <div class="col-12">
                             <label for="description" class="form-label">
                                 Description <span class="text-danger">*</span>
                             </label>
@@ -125,13 +124,11 @@
                                       name="description" 
                                       rows="4" 
                                       required>{{ old('description') }}</textarea>
-                            <div class="form-text">Décrivez votre établissement de manière attrayante.</div>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
-                        
-                        <div class="col-12">
+                            <div class="form-text">Décrivez votre établissement de manière attrayante.</div>
+
                             <!-- Photo principale -->
                             <div class="mb-4">
                                 <label class="form-label">
@@ -141,42 +138,34 @@
                                        id="main_photo" 
                                        name="main_photo" 
                                        class="form-control @error('main_photo') is-invalid @enderror" 
-                                       accept="image/*" 
+                                       accept="image/jpeg,image/png,image/jpg,image/gif" 
                                        required>
-                                <small class="form-text text-muted">Cette photo sera affichée en tant qu'image principale de votre hôtel</small>
                                 @error('main_photo')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                                <small class="form-text text-muted">Format accepté : JPG, PNG, GIF. Taille maximale : 5 Mo</small>
                             </div>
 
                             <!-- Galerie de photos -->
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="form-label">
-                                    Galerie de photos (optionnel)
+                                    Galerie de photos (facultatif)
                                 </label>
-                                <div class="border border-2 border-dashed rounded p-5 text-center">
-                                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
-                                    <h6>Glissez et déposez vos images ici</h6>
-                                    <p class="text-muted small mb-3">ou</p>
-                                    <label for="photos" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-upload me-2"></i>
-                                        Sélectionner des fichiers
-                                        <input type="file" 
-                                               id="photos" 
-                                               name="photos[]" 
-                                               class="d-none" 
-                                               multiple 
-                                               accept="image/*">
-                                    </label>
-                                    <p class="small text-muted mt-2 mb-0">
-                                        Formats acceptés : JPG, PNG, JPEG (max 5 Mo par image)
-                                    </p>
-                                </div>
+                                <input type="file" 
+                                       id="photos" 
+                                       name="photos[]" 
+                                       class="form-control @error('photos.*') is-invalid @enderror" 
+                                       accept="image/jpeg,image/png,image/jpg,image/gif" 
+                                       multiple>
+                                @error('photos.*')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Sélectionnez une ou plusieurs images. Formats acceptés : JPG, PNG, GIF. Taille maximale par fichier : 5 Mo</small>
+                            </div>
                                 
                                 <div id="image-preview" class="row g-2 mt-3">
                                     <!-- Les aperçus des images seront ajoutés ici -->
                                 </div>
-                                
                                 @error('photos')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror

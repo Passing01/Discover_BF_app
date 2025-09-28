@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Discover_BF — Espace Gestionnaire d'Hôtel</title>
   <meta name="description" content="Tableau de bord gestionnaire d'hôtel - Gestion des chambres et réservations">
   <meta name="keywords" content="hôtel, gestion, réservations, chambres, tourisme, burkina">
@@ -94,13 +95,35 @@
             <a href="{{ route('hotel-manager.rooms.index') }}" class="nav-link {{ request()->routeIs('hotel-manager.rooms.*') ? 'active' : '' }}">Chambres</a>
           </li>
           <li class="nav-item">
-            <a href="{{ route('hotel-manager.bookings.index') }}" class="nav-link {{ request()->routeIs('hotel-manager.bookings.*') ? 'active' : '' }}">Réservations</a>
+            @php
+                $defaultHotel = auth()->user()->managedHotels()->first();
+            @endphp
+            @if($defaultHotel)
+              <a href="{{ route('hotels.bookings.index', ['hotel' => $defaultHotel->id]) }}" class="nav-link {{ request()->routeIs('hotel-manager.bookings.*') ? 'active' : '' }}">Réservations</a>
+            @else
+              <a href="#" class="nav-link text-muted" disabled>Réservations</a>
+            @endif
           </li>
           <li class="nav-item">
-            <a href="{{ route('hotel-manager.calendar') }}" class="nav-link {{ request()->routeIs('hotel-manager.calendar') ? 'active' : '' }}">Calendrier</a>
+            @if($defaultHotel ?? false)
+              <a href="{{ route('hotels.calendar', ['hotel' => $defaultHotel->id]) }}" class="nav-link {{ request()->routeIs('hotels.calendar*') ? 'active' : '' }}">Calendrier</a>
+            @else
+              <a href="#" class="nav-link text-muted" disabled>Calendrier</a>
+            @endif
           </li>
           <li class="nav-item">
-            <a href="{{ route('hotel-manager.reports.index') }}" class="nav-link {{ request()->routeIs('hotel-manager.reports.*') ? 'active' : '' }}">Rapports</a>
+            @if($defaultHotel ?? false)
+              <a href="{{ route('hotels.reports', ['hotel' => $defaultHotel->id]) }}" class="nav-link {{ request()->routeIs('hotels.reports*') ? 'active' : '' }}">Rapports</a>
+            @else
+              <a href="#" class="nav-link text-muted" disabled>Rapports</a>
+            @endif
+          </li>
+          <li class="nav-item">
+            @if($defaultHotel ?? false)
+              <a href="{{ route('hotels.clients.index', ['hotel' => $defaultHotel->id]) }}" class="nav-link {{ request()->routeIs('hotels.clients.*') ? 'active' : '' }}">Clients</a>
+            @else
+              <a href="#" class="nav-link text-muted" disabled>Clients</a>
+            @endif
           </li>
         </ul>
       </nav>
@@ -126,7 +149,34 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+  <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Flatpickr est chargé dans le layout principal -->
+  
+  <!-- Scripts personnalisés -->
+  @stack('scripts')
+  
+  <!-- Initialisation du token CSRF pour AJAX -->
+  <script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    
+    // Désactiver le cache AJAX pour éviter les problèmes de mise en cache
+    $.ajaxSetup({ cache: false });
+    
+    // Fonction utilitaire pour afficher les messages d'erreur
+    function showError(message) {
+        // Vous pouvez personnaliser cette fonction pour afficher les erreurs comme vous le souhaitez
+        console.error(message);
+        alert('Erreur: ' + message);
+    }
+  </script>
 </body>
 </html>

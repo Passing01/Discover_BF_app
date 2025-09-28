@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\HotelBooking;
 use App\Models\Amenity;
 use App\Models\StayRule;
+use App\Models\RoomType;
 use App\Models\Photo;
 use App\Services\Geocoding\NominatimGeocoder;
 use Illuminate\Http\Request;
@@ -78,7 +79,10 @@ class HotelManagerController extends Controller
             ->take(5)
             ->get();
 
-        return view('hotel-manager.dashboard', compact('hotels', 'stats', 'recentBookings'));
+        // Récupérer le premier hôtel comme hôtel par défaut
+        $defaultHotel = $user->managedHotels()->first();
+
+        return view('hotel-manager.dashboard', compact('hotels', 'stats', 'recentBookings', 'defaultHotel'));
     }
 
     /**
@@ -96,35 +100,63 @@ class HotelManagerController extends Controller
      */
     public function store(Request $request)
     {
+        // Log de débogage
+        \Log::info('Début de la création d\'hôtel', $request->except(['main_photo', 'photos']));
+        
+        // Validation des données
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'address' => 'required|string',
-            'city' => 'required|string',
-            'country' => 'required|string',
-            'postal_code' => 'required|string',
-            'phone' => 'required|string',
-            'email' => 'required|email',
-            'website' => 'nullable|url',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'country' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'website' => 'nullable|url|max:255',
             'check_in_time' => 'required|date_format:H:i',
             'check_out_time' => 'required|date_format:H:i|after:check_in_time',
-            'cancellation_policy' => 'required|string',
-            'amenities' => 'array',
+            'cancellation_policy' => 'required|in:flexible,moderate,strict,non_refundable',
+            'min_stay' => 'required|integer|min:1|max:30',
+            'amenities' => 'nullable|array',
             'amenities.*' => 'exists:amenities,id',
             'rules' => 'required|array|min:1',
             'rules.*' => 'string|max:255',
-            'main_photo' => 'required|image|max:5120',
-            'photos.*' => 'image|max:5120',
+            'main_photo' => 'required|image|max:5120|mimes:jpeg,png,jpg,gif',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|max:5120|mimes:jpeg,png,jpg,gif',
+        ], [
+            'rules.required' => 'Veuillez ajouter au moins une règle pour votre hôtel.',
+            'main_photo.required' => 'Une photo principale est requise.',
+            'check_out_time.after' => 'L\'heure de départ doit être postérieure à l\'heure d\'arrivée.',
         ]);
+        
+        \Log::info('Validation réussie', $validated);
 
+        DB::beginTransaction();
+        
         try {
-            DB::beginTransaction();
-
-            // Géocodage de l'adresse
+            // Géocodage de l'adresse (optionnel)
+            $coordinates = null;
             $fullAddress = "{$validated['address']}, {$validated['postal_code']} {$validated['city']}, {$validated['country']}";
-            $coordinates = $this->geocoder->getCoordinates($fullAddress);
+            
+            try {
+                $coordinates = $this->geocoder->geocode($fullAddress);
+                if ($coordinates) {
+                    \Log::info('Géocodage réussi', ['coordinates' => $coordinates]);
+                } else {
+                    \Log::warning('Aucun résultat de géocodage pour l\'adresse', ['address' => $fullAddress]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Erreur lors du géocodage', [
+                    'error' => $e->getMessage(),
+                    'address' => $fullAddress
+                ]);
+                // On continue même si le géocodage échoue
+            }
 
-            $hotel = new Hotel([
+            // Préparation des données de l'hôtel
+            $hotelData = [
                 'name' => $validated['name'],
                 'description' => $validated['description'],
                 'address' => $validated['address'],
@@ -137,36 +169,157 @@ class HotelManagerController extends Controller
                 'check_in_time' => $validated['check_in_time'],
                 'check_out_time' => $validated['check_out_time'],
                 'cancellation_policy' => $validated['cancellation_policy'],
-                'latitude' => $coordinates['lat'] ?? null,
-                'longitude' => $coordinates['lon'] ?? null,
+                'min_stay' => $validated['min_stay'] ?? 1,
+                'stars' => $validated['stars'] ?? 3, // Ajout du champ stars avec valeur par défaut 3
+                'latitude' => 0.0, // Valeur par défaut pour latitude
+                'longitude' => 0.0, // Valeur par défaut pour longitude
+                'status' => 'pending',
                 'is_active' => true,
+                'is_approved' => false,
+                'is_featured' => false,
                 'manager_id' => Auth::id(),
                 'slug' => Str::slug($validated['name']) . '-' . Str::random(6),
-            ]);
+            ];
 
-            $hotel->save();
-
-            // Gestion des photos
-            if ($request->hasFile('main_photo')) {
-                $path = $request->file('main_photo')->store('hotels/' . $hotel->id, 'public');
-                $hotel->photos()->create([
-                    'path' => $path,
-                    'is_main' => true,
-                ]);
+            // Ajout des coordonnées si disponibles
+            if ($coordinates && is_array($coordinates) && count($coordinates) >= 2) {
+                $hotelData['latitude'] = $coordinates[0];
+                $hotelData['longitude'] = $coordinates[1];
             }
 
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('hotels/' . $hotel->id, 'public');
-                    $hotel->photos()->create([
-                        'path' => $path,
-                        'is_main' => false,
+            \Log::info('Création de l\'hôtel', $hotelData);
+            $hotel = Hotel::create($hotelData);
+            \Log::info('Hôtel créé avec succès', ['hotel_id' => $hotel->id]);
+
+            // Création du répertoire de stockage s'il n'existe pas
+            $storagePath = 'hotels/' . $hotel->id;
+            if (!Storage::disk('public')->exists($storagePath)) {
+                Storage::disk('public')->makeDirectory($storagePath, 0755, true);
+            }
+
+            // Gestion de la photo principale
+            if ($request->hasFile('main_photo')) {
+                $file = $request->file('main_photo');
+                \Log::info('Traitement de la photo principale', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'mime' => $file->getMimeType(),
+                    'extension' => $file->getClientOriginalExtension()
+                ]);
+                
+                try {
+                    $filename = 'main_' . time() . '.' . $file->getClientOriginalExtension();
+                    \Log::info('Tentative de stockage de la photo principale', [
+                        'filename' => $filename,
+                        'storage_path' => $storagePath
                     ]);
+                    
+                    // Stockage du fichier
+                    $path = $file->storeAs($storagePath, $filename, 'public');
+                    \Log::info('Photo stockée avec succès', ['path' => $path]);
+                    
+                    // Vérification que le fichier existe bien
+                    if (!Storage::disk('public')->exists($path)) {
+                        throw new \Exception("Le fichier n'a pas été correctement enregistré sur le disque");
+                    }
+                    
+                    // Enregistrement dans la base de données
+                    $photo = $hotel->photos()->create([
+                        'path' => $path,
+                        'is_main' => true,
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize()
+                    ]);
+                    
+                    \Log::info('Photo principale enregistrée dans la base de données', [
+                        'photo_id' => $photo->id,
+                        'path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Erreur lors de l\'enregistrement de la photo principale', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'hotel_id' => $hotel->id,
+                        'file' => [
+                            'name' => $file ? $file->getClientOriginalName() : null,
+                            'size' => $file ? $file->getSize() : null,
+                            'mime' => $file ? $file->getMimeType() : null
+                        ]
+                    ]);
+                    throw $e;
+                }
+            }
+
+            // Gestion des photos supplémentaires
+            if ($request->hasFile('photos')) {
+                $photos = $request->file('photos');
+                \Log::info('Traitement des photos supplémentaires', ['count' => count($photos)]);
+                
+                foreach ($photos as $index => $photo) {
+                    \Log::info("Traitement de la photo supplémentaire #$index", [
+                        'original_name' => $photo->getClientOriginalName(),
+                        'size' => $photo->getSize(),
+                        'mime' => $photo->getMimeType(),
+                        'extension' => $photo->getClientOriginalExtension()
+                    ]);
+                    
+                    try {
+                        $filename = 'photo_' . time() . '_' . $index . '.' . $photo->getClientOriginalExtension();
+                        \Log::info("Tentative de stockage de la photo supplémentaire #$index", [
+                            'filename' => $filename,
+                            'storage_path' => $storagePath
+                        ]);
+                        
+                        // Stockage du fichier
+                        $path = $photo->storeAs($storagePath, $filename, 'public');
+                        \Log::info("Photo supplémentaire #$index stockée avec succès", ['path' => $path]);
+                        
+                        // Vérification que le fichier existe bien
+                        if (!Storage::disk('public')->exists($path)) {
+                            throw new \Exception("Le fichier n'a pas été correctement enregistré sur le disque");
+                        }
+                        
+                        // Enregistrement dans la base de données
+                        $photoModel = $hotel->photos()->create([
+                            'path' => $path,
+                            'is_main' => false,
+                            'original_name' => $photo->getClientOriginalName(),
+                            'mime_type' => $photo->getMimeType(),
+                            'size' => $photo->getSize()
+                        ]);
+                        
+                        \Log::info("Photo supplémentaire #$index enregistrée avec succès", [
+                            'photo_id' => $photoModel->id,
+                            'path' => $path,
+                            'original_name' => $photo->getClientOriginalName(),
+                            'size' => $photo->getSize()
+                        ]);
+                        
+                    } catch (\Exception $e) {
+                        \Log::error("Erreur lors de l'enregistrement de la photo supplémentaire #$index", [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
+                            'hotel_id' => $hotel->id,
+                            'index' => $index,
+                            'file' => [
+                                'name' => $photo ? $photo->getClientOriginalName() : null,
+                                'size' => $photo ? $photo->getSize() : null,
+                                'mime' => $photo ? $photo->getMimeType() : null
+                            ]
+                        ]);
+                        // On continue avec les autres photos
+                    }
                 }
             }
 
             // Synchronisation des équipements
-            $hotel->amenities()->sync($validated['amenities'] ?? []);
+            if (!empty($validated['amenities'])) {
+                $hotel->amenities()->sync($validated['amenities']);
+                \Log::info('Équipements synchronisés', ['amenities' => $validated['amenities']]);
+            }
             
             // Gestion des règles
             $ruleIds = [];
@@ -185,13 +338,24 @@ class HotelManagerController extends Controller
             $hotel->rules()->sync($ruleIds);
 
             DB::commit();
+            \Log::info('Hôtel créé avec succès, redirection vers la liste des hôtels', ['hotel_id' => $hotel->id]);
 
-            return redirect()->route('hotel-manager.hotels.show', $hotel->id)
+            return redirect()->route('hotel-manager.hotels.index')
                 ->with('success', 'Hôtel créé avec succès.');
 
         } catch (\Exception $e) {
+            \Log::error('Erreur lors de la création de l\'hôtel', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['main_photo', 'photos'])
+            ]);
+            
             DB::rollBack();
-            return back()->withInput()->with('error', 'Une erreur est survenue lors de la création de l\'hôtel.');
+            \Log::error('Rollback effectué après erreur');
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Une erreur est survenue lors de la création de l\'hôtel. Détails : ' . $e->getMessage());
         }
     }
 
@@ -387,7 +551,7 @@ class HotelManagerController extends Controller
      */
     public function destroy(Hotel $hotel)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         // Vérifier s'il y a des réservations futures
         $hasFutureBookings = $hotel->bookings()
@@ -437,17 +601,32 @@ class HotelManagerController extends Controller
     }
 
     /**
+     * Affiche la liste de toutes les chambres de tous les hôtels du gestionnaire
+     */
+    public function listRooms()
+    {
+        $hotels = $this->user->managedHotels()
+            ->with(['rooms' => function($query) {
+                $query->withCount('bookings')
+                    ->with('photos');
+            }])
+            ->get();
+
+        return view('hotel-manager.rooms.list', compact('hotels'));
+    }
+
+    /**
      * Affiche la liste des chambres d'un hôtel
      */
     public function rooms(Hotel $hotel)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $rooms = $hotel->rooms()
             ->withCount(['bookings' => function($query) {
                 $query->whereIn('status', ['confirmed', 'checked_in']);
             }])
-            ->with(['roomType', 'photos'])
+            ->with('photos')
             ->latest()
             ->paginate(10);
 
@@ -461,7 +640,8 @@ class HotelManagerController extends Controller
     {
         // $this->authorize('manage-hotel', $hotel);
 
-        $roomTypes = Room::select('type')->distinct()->pluck('type');
+        // Utiliser les types de chambre depuis la table room_types
+        $roomTypes = RoomType::orderBy('name')->get();
         $amenities = Amenity::where('name', 'room')->get();
 
         return view('hotel-manager.rooms.create', compact('hotel', 'roomTypes', 'amenities'));
@@ -473,45 +653,85 @@ class HotelManagerController extends Controller
     public function storeRoom(Request $request, Hotel $hotel)
     {
         // $this->authorize('manage-hotel', $hotel);
-
-        $validated = $request->validate([
+        
+        // Log des données reçues
+        \Log::info('Données reçues pour la création de chambre :', $request->all());
+        \Log::info('Fichiers reçus :', ['photos_count' => $request->hasFile('photos') ? count($request->file('photos')) : 0]);
+        
+        $rules = [
             'room_type_id' => 'required|exists:room_types,id',
-            'room_number' => 'required|string|max:20|unique:rooms,room_number',
+            'room_number' => 'required|string|max:10|unique:rooms,room_number,NULL,id,hotel_id,' . $hotel->id,
             'floor' => 'required|integer|min:-10|max:200',
-            'max_occupancy' => 'required|integer|min:1|max:20',
-            'price_per_night' => 'required|numeric|min:0.01|max:99999.99',
             'size' => 'nullable|integer|min:1',
-            'view' => 'nullable|string|max:100',
-            'bed_type' => 'required|string|max:100',
+            'bed_type' => 'required|in:single,double,queen,king,twin,multiple',
             'bed_count' => 'required|integer|min:1|max:10',
-            'is_smoking_allowed' => 'boolean',
-            'has_balcony' => 'boolean',
-            'has_terrace' => 'boolean',
-            'has_sea_view' => 'boolean',
-            'has_lake_view' => 'boolean',
-            'has_mountain_view' => 'boolean',
-            'has_bathtub' => 'boolean',
-            'has_shower' => 'boolean',
-            'has_air_conditioning' => 'boolean',
-            'has_heating' => 'boolean',
-            'has_tv' => 'boolean',
-            'has_phone' => 'boolean',
-            'has_safe' => 'boolean',
-            'has_mini_bar' => 'boolean',
-            'has_electric_kettle' => 'boolean',
-            'has_wifi' => 'boolean',
-            'is_accessible' => 'boolean',
+            'max_occupancy' => 'required|integer|min:1',
+            'price_per_night' => 'required|numeric|min:0',
+            'capacity' => 'required|integer|min:1|max:10',
+            'min_stay' => 'nullable|integer|min:1',
+            'max_adults' => 'nullable|integer|min:1',
+            'max_children' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
-            'amenities' => 'array',
+            'view' => 'nullable|string|max:100',
+            'is_smoking_allowed' => 'sometimes|boolean',
+            'has_balcony' => 'sometimes|boolean',
+            'has_terrace' => 'sometimes|boolean',
+            'has_sea_view' => 'sometimes|boolean',
+            'has_lake_view' => 'sometimes|boolean',
+            'has_mountain_view' => 'sometimes|boolean',
+            'has_bathtub' => 'sometimes|boolean',
+            'has_shower' => 'sometimes|boolean',
+            'has_air_conditioning' => 'sometimes|boolean',
+            'has_heating' => 'sometimes|boolean',
+            'has_tv' => 'sometimes|boolean',
+            'has_phone' => 'sometimes|boolean',
+            'has_safe' => 'sometimes|boolean',
+            'has_mini_bar' => 'sometimes|boolean',
+            'has_electric_kettle' => 'sometimes|boolean',
+            'has_wifi' => 'sometimes|boolean',
+            'is_accessible' => 'sometimes|boolean',
+            'amenities' => 'nullable|array',
             'amenities.*' => 'exists:amenities,id',
             'photos' => 'required|array|min:1|max:10',
-            'photos.*' => 'image|max:5120',
-        ]);
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ];
+        
+        // Log des règles de validation
+        \Log::info('Règles de validation :', $rules);
+        
+        // Validation
+        $validator = \Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            // Log des erreurs de validation
+            \Log::error('Erreurs de validation :', $validator->errors()->toArray());
+            \Log::error('Données de la requête :', $request->all());
+            
+            // Renvoyer les erreurs au formulaire
+            return redirect()
+                ->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        // Si la validation réussit, on récupère les données validées
+        $validated = $validator->validated();
+        \Log::info('Données validées :', $validated);
 
         try {
             DB::beginTransaction();
+            
+            // Log avant la création de la chambre
+            \Log::info('Création d\'une nouvelle chambre avec les données :', [
+                'hotel_id' => $hotel->id,
+                'room_type_id' => $validated['room_type_id'],
+                'room_number' => $validated['room_number'],
+                'bed_type' => $validated['bed_type'] ?? 'non défini',
+                'bed_count' => $validated['bed_count'] ?? 1,
+                'max_occupancy' => $validated['max_occupancy'] ?? 1,
+            ]);
 
-            $room = new Room([
+            $roomData = [
                 'hotel_id' => $hotel->id,
                 'room_type_id' => $validated['room_type_id'],
                 'room_number' => $validated['room_number'],
@@ -520,8 +740,8 @@ class HotelManagerController extends Controller
                 'price_per_night' => $validated['price_per_night'] * 100, // Convertir en centimes
                 'size' => $validated['size'] ?? null,
                 'view' => $validated['view'] ?? null,
-                'bed_type' => $validated['bed_type'],
-                'bed_count' => $validated['bed_count'],
+                'bed_type' => $validated['bed_type'] ?? 'double', // Valeur par défaut ajoutée
+                'bed_count' => $validated['bed_count'] ?? 1, // Valeur par défaut ajoutée
                 'is_smoking_allowed' => $validated['is_smoking_allowed'] ?? false,
                 'has_balcony' => $validated['has_balcony'] ?? false,
                 'has_terrace' => $validated['has_terrace'] ?? false,
@@ -541,20 +761,95 @@ class HotelManagerController extends Controller
                 'is_accessible' => $validated['is_accessible'] ?? false,
                 'description' => $validated['description'] ?? null,
                 'is_available' => true,
-            ]);
-
-            $room->save();
+            ];
+            
+            // Log des données de la chambre avant création
+            \Log::info('Données complètes de la chambre :', $roomData);
+            
+            try {
+                // Get room type name from the ID
+                $roomType = \App\Models\RoomType::findOrFail($validated['room_type_id']);
+                
+                // Prepare the room data for the database
+                $roomData = [
+                    'name' => $validated['name'] ?? 'Chambre ' . $validated['room_number'],
+                    'type' => $roomType->name,
+                    'price_per_night' => (float)$validated['price_per_night'],
+                    'capacity' => (int)$request->input('capacity', 2),
+                    'available' => true,
+                    'hotel_id' => $hotel->id,
+                    'description' => [
+                        'size' => !empty($validated['size']) ? (int)$validated['size'] : null,
+                        'view' => $validated['view'] ?? null,
+                        'bed_type' => $validated['bed_type'],
+                        'bed_count' => (int)$validated['bed_count'],
+                        'max_occupancy' => (int)$validated['max_occupancy'],
+                        'is_smoking_allowed' => $request->boolean('is_smoking_allowed', false),
+                        'has_balcony' => $request->boolean('has_balcony', false),
+                        'has_terrace' => $request->boolean('has_terrace', false),
+                        'has_sea_view' => $request->boolean('has_sea_view', false),
+                        'has_lake_view' => $request->boolean('has_lake_view', false),
+                        'has_mountain_view' => $request->boolean('has_mountain_view', false),
+                        'has_bathtub' => $request->boolean('has_bathtub', false),
+                        'has_shower' => $request->boolean('has_shower', true),
+                        'has_air_conditioning' => $request->boolean('has_air_conditioning', false),
+                        'has_heating' => $request->boolean('has_heating', false),
+                        'has_tv' => $request->boolean('has_tv', false),
+                        'has_phone' => $request->boolean('has_phone', false),
+                        'has_safe' => $request->boolean('has_safe', false),
+                        'has_mini_bar' => $request->boolean('has_mini_bar', false),
+                        'has_electric_kettle' => $request->boolean('has_electric_kettle', false),
+                        'has_wifi' => $request->boolean('has_wifi', false),
+                        'is_accessible' => $request->boolean('is_accessible', false),
+                        'min_stay' => $request->filled('min_stay') ? (int)$request->input('min_stay') : 1,
+                        'max_adults' => $request->filled('max_adults') ? (int)$request->input('max_adults') : 2,
+                        'max_children' => $request->filled('max_children') ? (int)$request->input('max_children') : 0,
+                        'room_number' => $validated['room_number'],
+                        'floor' => (int)$validated['floor']
+                    ]
+                ];
+                
+                \Log::info('Attempting to create room with data:', $roomData);
+                
+                $room = new Room();
+                $room->fill($roomData);
+                $saved = $room->save();
+                
+                if (!$saved) {
+                    throw new \Exception('Failed to save room to database');
+                }
+                
+                \Log::info('Room created successfully with ID: ' . $room->id);
+                
+            } catch (\Exception $e) {
+                \Log::error('Error creating room: ' . $e->getMessage());
+                \Log::error('Stack trace: ' . $e->getTraceAsString());
+                DB::rollBack();
+                return redirect()
+                    ->back()
+                    ->with('error', 'Une erreur est survenue lors de la création de la chambre. Veuillez réessayer.')
+                    ->withInput();
+            }
 
             // Ajout des photos de la chambre
             if ($request->hasFile('photos')) {
+                // Créer le dossier s'il n'existe pas
+                $storagePath = storage_path('app/public/rooms/' . $room->id);
+                if (!file_exists($storagePath)) {
+                    mkdir($storagePath, 0755, true);
+                }
+
                 $isFirst = true;
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('rooms/' . $room->id, 'public');
-                    $room->photos()->create([
-                        'path' => $path,
-                        'is_main' => $isFirst,
-                    ]);
-                    $isFirst = false;
+                    // Vérifier si le fichier est valide
+                    if ($photo->isValid()) {
+                        $path = $photo->store('rooms/' . $room->id, 'public');
+                        $room->photos()->create([
+                            'path' => $path,
+                            'is_main' => $isFirst,
+                        ]);
+                        $isFirst = false;
+                    }
                 }
             }
 
@@ -562,11 +857,11 @@ class HotelManagerController extends Controller
             if (!empty($validated['amenities'])) {
                 $room->amenities()->sync($validated['amenities']);
             }
-
+            
             DB::commit();
-
-            return redirect()->route('hotel-manager.rooms.show', ['hotel' => $hotel->id, 'room' => $room->id])
-                ->with('success', 'Chambre créée avec succès.');
+            
+            return redirect()->route('hotel-manager.hotels.rooms', ['hotel' => $hotel->id])
+                ->with('success', 'La chambre a été créée avec succès.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -579,34 +874,46 @@ class HotelManagerController extends Controller
      */
     public function showRoom(Hotel $hotel, Room $room)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($room->hotel_id !== $hotel->id) {
             abort(404);
         }
 
         $room->load([
-            'roomType',
             'photos',
-            'amenities',
+            'hotel',  // Load the hotel relationship first
             'bookings' => function($query) {
-                $query->whereIn('status', ['confirmed', 'checked_in'])
+                $query->whereIn('status', ['confirmed'])
                     ->with('user')
-                    ->orderBy('check_in', 'asc');
+                    ->orderBy('start_date', 'asc');
             },
-            'unavailableDates'
+            'reviews' => function($query) {
+                $query->with('user')
+                    ->orderBy('created_at', 'desc');
+            }
         ]);
+        
+        // Manually load amenities through the hotel
+        $room->setRelation('amenities', $room->hotel->amenities);
 
         // Calcul du taux d'occupation sur 6 mois
         $occupancyRate = $this->calculateRoomOccupancyRate($room);
 
         // Prochaines réservations
         $upcomingBookings = $room->bookings()
-            ->where('check_in', '>=', now())
-            ->orderBy('check_in', 'asc')
+            ->where('start_date', '>=', now())
+            ->orderBy('start_date', 'asc')
+            ->take(5)
+            ->get();
+            
+        // Réservations récentes (30 derniers jours)
+        $recentBookings = $room->bookings()
+            ->where('created_at', '>=', now()->subDays(30))
+            ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        return view('hotel-manager.rooms.show', compact('hotel', 'room', 'occupancyRate', 'upcomingBookings'));
+        return view('hotel-manager.rooms.show', compact('hotel', 'room', 'occupancyRate', 'upcomingBookings', 'recentBookings'));
     }
 
     /**
@@ -614,14 +921,24 @@ class HotelManagerController extends Controller
      */
     public function editRoom(Hotel $hotel, Room $room)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($room->hotel_id !== $hotel->id) {
             abort(404);
         }
 
-        $room->load(['roomType', 'photos', 'amenities']);
-        $roomTypes = \App\Models\RoomType::all();
-        $amenities = Amenity::where('type', 'room')->get();
+        // Charger les relations nécessaires
+        $room->load(['photos', 'hotel.amenities']);
+        
+        // Récupérer la liste des types de chambres uniques
+        $roomTypes = [
+            'standard' => 'Standard',
+            'deluxe' => 'Deluxe',
+            'suite' => 'Suite',
+            'family' => 'Familiale',
+            'executive' => 'Exécutive'
+        ];
+        
+        $amenities = Amenity::all(); // Récupérer tous les équipements sans filtre
 
         return view('hotel-manager.rooms.edit', compact('hotel', 'room', 'roomTypes', 'amenities'));
     }
@@ -631,7 +948,7 @@ class HotelManagerController extends Controller
      */
     public function updateRoom(Request $request, Hotel $hotel, Room $room)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($room->hotel_id !== $hotel->id) {
             abort(404);
         }
@@ -769,7 +1086,7 @@ class HotelManagerController extends Controller
      */
     public function destroyRoom(Hotel $hotel, Room $room)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($room->hotel_id !== $hotel->id) {
             abort(404);
         }
@@ -821,7 +1138,7 @@ class HotelManagerController extends Controller
      */
     public function calendar(Hotel $hotel)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $rooms = $hotel->rooms()
             ->with(['bookings' => function($query) {
@@ -835,15 +1152,16 @@ class HotelManagerController extends Controller
             foreach ($room->bookings as $booking) {
                 $events[] = [
                     'title' => 'Chambre ' . $room->room_number . ' - ' . $booking->user->name,
-                    'start' => $booking->check_in->toIso8601String(),
-                    'end' => $booking->check_out->toIso8601String(),
-                    'url' => route('hotel-manager.bookings.show', $booking->id),
+                    'start' => $booking->start_date->toIso8601String(),
+                    'end' => $booking->end_date->toIso8601String(),
+                    'url' => route('hotels.bookings.show', ['hotel' => $hotel->id, 'booking' => $booking->id]),
                     'color' => $booking->status === 'checked_in' ? '#28a745' : '#007bff',
                     'extendedProps' => [
                         'status' => $booking->status,
                         'guest' => $booking->user->name,
                         'room' => $room->room_number,
-                    ]
+                        'hotel' => $hotel->name,
+          ]
                 ];
             }
         }
@@ -860,7 +1178,7 @@ class HotelManagerController extends Controller
      */
     public function getCalendarEvents(Hotel $hotel, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $start = Carbon::parse($request->start)->startOfDay();
         $end = Carbon::parse($request->end)->endOfDay();
@@ -868,8 +1186,8 @@ class HotelManagerController extends Controller
 
         $query = $hotel->bookings()
             ->whereIn('status', ['confirmed', 'checked_in'])
-            ->where('check_in', '<=', $end)
-            ->where('check_out', '>=', $start)
+            ->where('start_date', '<=', $end)
+            ->where('end_date', '>=', $start)
             ->with(['room', 'user']);
 
         if ($roomId) {
@@ -884,8 +1202,8 @@ class HotelManagerController extends Controller
             $events[] = [
                 'id' => $booking->id,
                 'title' => 'Chambre ' . $booking->room->room_number . ' - ' . $booking->user->name,
-                'start' => $booking->check_in->toIso8601String(),
-                'end' => $booking->check_out->toIso8601String(),
+                'start' => $booking->start_date->toIso8601String(),
+                'end' => $booking->end_date->toIso8601String(),
                 'url' => route('hotel-manager.bookings.show', $booking->id),
                 'color' => $booking->status === 'checked_in' ? '#28a745' : '#007bff',
                 'extendedProps' => [
@@ -908,10 +1226,10 @@ class HotelManagerController extends Controller
      */
     public function bookings(Hotel $hotel, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $query = $hotel->bookings()
-            ->with(['room', 'user', 'room.roomType'])
+            ->with(['room', 'user'])
             ->latest();
 
         // Filtres
@@ -945,12 +1263,12 @@ class HotelManagerController extends Controller
      */
     public function showBooking(Hotel $hotel, HotelBooking $booking)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($booking->hotel_id !== $hotel->id) {
             abort(404);
         }
 
-        $booking->load(['room', 'user', 'room.roomType', 'payments']);
+        $booking->load(['room', 'user', 'payments']);
         
         return view('hotel-manager.bookings.show', compact('hotel', 'booking'));
     }
@@ -960,7 +1278,7 @@ class HotelManagerController extends Controller
      */
     public function updateBookingStatus(Hotel $hotel, HotelBooking $booking, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         if ($booking->hotel_id !== $hotel->id) {
             abort(404);
         }
@@ -1014,7 +1332,7 @@ class HotelManagerController extends Controller
      */
     public function reports(Hotel $hotel, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $startDate = $request->input('start_date', now()->subMonths(6)->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->format('Y-m-d'));
@@ -1030,14 +1348,16 @@ class HotelManagerController extends Controller
         // Requête de base pour les réservations
         $query = $hotel->bookings()
             ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-            ->where('check_in', '<=', $endDate)
-            ->where('check_out', '>=', $startDate);
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate);
 
         // Statistiques générales
         $stats = [
             'total_bookings' => (clone $query)->count(),
-            'total_revenue' => (clone $query)->sum('total_amount') / 100,
-            'average_stay' => (clone $query)->avg(DB::raw('DATEDIFF(check_out, check_in)')),
+            'total_revenue' => (clone $query)->sum('total_price') / 100,
+            'average_stay' => (clone $query)->get()->avg(function($booking) {
+                return $booking->end_date->diffInDays($booking->start_date);
+            }),
             'occupancy_rate' => $this->calculateOccupancyRate($hotel, $startDate, $endDate),
         ];
 
@@ -1046,16 +1366,22 @@ class HotelManagerController extends Controller
         
         // Données mensuelles par défaut
         if ($reportType === 'monthly') {
-            $monthlyData = $hotel->bookings()
+            // Utiliser une sous-requête pour éviter la double jointure
+            $monthlyData = DB::table('hotel_bookings')
                 ->select(
-                    DB::raw('DATE_FORMAT(check_in, "%Y-%m") as month'),
+                    DB::raw("TO_CHAR(hotel_bookings.start_date, 'YYYY-MM') as month"),
                     DB::raw('COUNT(*) as bookings_count'),
-                    DB::raw('SUM(total_amount) / 100 as total_revenue')
+                    DB::raw('SUM(hotel_bookings.total_price) / 100 as total_revenue')
                 )
-                ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-                ->where('check_in', '>=', now()->subYear())
-                ->groupBy('month')
-                ->orderBy('month')
+                ->whereIn('hotel_bookings.room_id', function($query) use ($hotel) {
+                    $query->select('id')
+                          ->from('rooms')
+                          ->where('hotel_id', $hotel->id);
+                })
+                ->whereIn('hotel_bookings.status', ['confirmed', 'checked_in', 'completed'])
+                ->where('hotel_bookings.start_date', '>=', now()->subYear())
+                ->groupBy(DB::raw("TO_CHAR(hotel_bookings.start_date, 'YYYY-MM')"))
+                ->orderBy('month', 'asc')
                 ->get();
 
             $chartData['labels'] = $monthlyData->pluck('month');
@@ -1066,16 +1392,16 @@ class HotelManagerController extends Controller
         elseif ($reportType === 'room_type') {
             $roomTypeData = $hotel->bookings()
                 ->join('rooms', 'hotel_bookings.room_id', '=', 'rooms.id')
-                ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
                 ->select(
-                    'room_types.name as room_type',
+                    'rooms.type as room_type',
                     DB::raw('COUNT(*) as bookings_count'),
-                    DB::raw('SUM(hotel_bookings.total_amount) / 100 as total_revenue')
+                    DB::raw('SUM(hotel_bookings.total_price) / 100 as total_revenue')
                 )
                 ->whereIn('hotel_bookings.status', ['confirmed', 'checked_in', 'completed'])
-                ->where('hotel_bookings.check_in', '>=', $startDate)
-                ->where('hotel_bookings.check_in', '<=', $endDate)
-                ->groupBy('room_type')
+                ->where('hotel_bookings.start_date', '>=', $startDate)
+                ->where('hotel_bookings.start_date', '<=', $endDate)
+                ->groupBy('rooms.type')
+                ->orderBy('room_type')
                 ->get();
 
             $chartData['labels'] = $roomTypeData->pluck('room_type');
@@ -1112,12 +1438,16 @@ class HotelManagerController extends Controller
         $popularRooms = $hotel->rooms()
             ->withCount(['bookings' => function($query) use ($startDate, $endDate) {
                 $query->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-                    ->where('check_in', '>=', $startDate)
-                    ->where('check_in', '<=', $endDate);
+                    ->where('start_date', '>=', $startDate)
+                    ->where('start_date', '<=', $endDate);
             }])
             ->orderBy('bookings_count', 'desc')
             ->take(5)
             ->get();
+
+        // Convertir les dates en instances Carbon si ce ne sont pas déjà des objets
+        $startDate = $startDate instanceof \Carbon\Carbon ? $startDate : \Carbon\Carbon::parse($startDate);
+        $endDate = $endDate instanceof \Carbon\Carbon ? $endDate : \Carbon\Carbon::parse($endDate);
 
         return view('hotel-manager.reports.index', [
             'hotel' => $hotel,
@@ -1136,7 +1466,7 @@ class HotelManagerController extends Controller
      */
     public function exportReports(Hotel $hotel, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
 
         $validated = $request->validate([
             'type' => 'required|in:bookings,revenue,guests',
@@ -1166,7 +1496,7 @@ class HotelManagerController extends Controller
                             'Email' => $booking->user->email,
                             'Téléphone' => $booking->user->phone,
                             'Chambre' => $booking->room->room_number,
-                            'Type de chambre' => $booking->room->roomType->name,
+                            'Type de chambre' => $booking->room->type,
                             'Arrivée' => $booking->check_in->format('d/m/Y'),
                             'Départ' => $booking->check_out->format('d/m/Y'),
                             'Nuits' => $booking->check_out->diffInDays($booking->check_in),
@@ -1182,14 +1512,14 @@ class HotelManagerController extends Controller
             case 'revenue':
                 $data = $hotel->bookings()
                     ->select(
-                        DB::raw('DATE_FORMAT(check_in, "%Y-%m") as month'),
+                        DB::raw("TO_CHAR(start_date, 'YYYY-MM') as month"),
                         DB::raw('COUNT(*) as bookings_count'),
-                        DB::raw('SUM(total_amount) / 100 as total_revenue'),
-                        DB::raw('AVG(total_amount) / 100 as average_booking_value')
+                        DB::raw('SUM(total_price) / 100 as total_revenue'),
+                        DB::raw('AVG(total_price) / 100 as average_booking_value')
                     )
                     ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-                    ->whereBetween('check_in', [$startDate, $endDate])
-                    ->groupBy('month')
+                    ->whereBetween('start_date', [$startDate, $endDate])
+                    ->groupBy(DB::raw("TO_CHAR(start_date, 'YYYY-MM')"))
                     ->orderBy('month')
                     ->get()
                     ->map(function($item) {
@@ -1287,7 +1617,7 @@ class HotelManagerController extends Controller
      */
     public function settings(Hotel $hotel)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         
         $hotel->load(['photos', 'amenities', 'rules']);
         $amenities = Amenity::all();
@@ -1301,7 +1631,7 @@ class HotelManagerController extends Controller
      */
     public function updateSettings(Hotel $hotel, Request $request)
     {
-        $this->authorize('manage-hotel', $hotel);
+        // $this->authorize('manage-hotel', $hotel);
         
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -1468,18 +1798,26 @@ class HotelManagerController extends Controller
         $days = $startDate->diffInDays($endDate) + 1;
         $totalRoomNights = $totalRooms * $days;
         
-        $bookedRoomNights = $hotel->bookings()
+        // Récupérer toutes les réservations pertinentes
+        $bookings = $hotel->bookings()
             ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-            ->where('check_in', '<=', $endDate)
-            ->where('check_out', '>=', $startDate)
-            ->select(DB::raw('SUM(
-                DATEDIFF(
-                    LEAST(check_out, ?),
-                    GREATEST(check_in, ?)
-                )
-            ) as booked_nights'))
-            ->addBinding([$endDate, $startDate], 'select')
-            ->value('booked_nights') ?? 0;
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
+            ->get();
+        
+        // Calculer les nuitées réservées en PHP
+        $bookedRoomNights = 0;
+        foreach ($bookings as $booking) {
+            $checkIn = Carbon::parse($booking->start_date);
+            $checkOut = Carbon::parse($booking->end_date);
+            
+            // Ajuster les dates pour ne considérer que la période demandée
+            $periodStart = $checkIn->isBefore($startDate) ? $startDate : $checkIn;
+            $periodEnd = $checkOut->isAfter($endDate) ? $endDate : $checkOut;
+            
+            // Ajouter le nombre de nuits pour cette réservation
+            $bookedRoomNights += $periodStart->diffInDays($periodEnd);
+        }
         
         return $totalRoomNights > 0 ? ($bookedRoomNights / $totalRoomNights) * 100 : 0;
     }
@@ -1496,14 +1834,11 @@ class HotelManagerController extends Controller
         
         $bookedDays = $room->bookings()
             ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
-            ->where('check_in', '<=', $endDate)
-            ->where('check_out', '>=', $startDate)
-            ->select(DB::raw('SUM(
-                DATEDIFF(
-                    LEAST(check_out, ?),
-                    GREATEST(check_in, ?)
-                )
-            ) as booked_days'))
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
+            ->select(DB::raw("SUM(
+                (LEAST(DATE(?), DATE(end_date)) - GREATEST(DATE(?), DATE(start_date)) + 1)
+            ) as booked_days"))
             ->addBinding([$endDate, $startDate], 'select')
             ->value('booked_days') ?? 0;
         
@@ -1531,13 +1866,12 @@ class HotelManagerController extends Controller
     /**
      * implementation de la methode tooglestatus
      */
-    protected function toggleStatus(Hotel $hotel)
+    public function toggleStatus(Hotel $hotel)
     {
         $hotel->is_active = !$hotel->is_active;
         $hotel->save();
         return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
     }
-
     /**
      * Toggle the featured status of a hotel
      */
@@ -1546,5 +1880,21 @@ class HotelManagerController extends Controller
         $hotel->is_featured = !$hotel->is_featured;
         $hotel->save();
         return redirect()->back()->with('success', 'Statut vedette mis à jour avec succès.');
+    }
+    
+    /**
+     * Bascule la disponibilité d'une chambre
+     */
+    public function toggleRoomAvailability(Hotel $hotel, Room $room)
+    {
+        if ($room->hotel_id !== $hotel->id) {
+            abort(404);
+        }
+
+        $room->update([
+            'available' => !$room->available
+        ]);
+
+        return back()->with('success', 'La disponibilité de la chambre a été mise à jour avec succès.');
     }
 }

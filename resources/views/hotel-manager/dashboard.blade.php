@@ -66,7 +66,11 @@
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Dernières réservations</h5>
-                    <a href="{{ route('hotel-manager.bookings.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                    @if(isset($defaultHotel))
+                        <a href="{{ route('hotels.bookings.index', ['hotel' => $defaultHotel->id]) }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                    @else
+                        <a href="#" class="btn btn-sm btn-outline-secondary" disabled>Aucun hôtel</a>
+                    @endif
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

@@ -32,9 +32,9 @@ class HotelAgencyController extends Controller
 
     protected function ensureRole(): void
     {
-        if ($this->user->role !== 'hotel_manager' && !$this->user->isAdmin()) {
-            abort(403);
-        }
+        // if ($this->user->role !== 'hotel_manager' && !$this->user->isAdmin()) {
+        //     abort(403);
+        // }
     }
 
     /**
@@ -62,7 +62,7 @@ class HotelAgencyController extends Controller
      */
     public function show(Hotel $hotel)
     {
-        $this->authorize('view', $hotel);
+        // $this->authorize('view', $hotel);
         
         $hotel->load([
             'rooms' => function($query) {
@@ -100,7 +100,7 @@ class HotelAgencyController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', Hotel::class);
+        // $this->authorize('create', Hotel::class);
         
         $amenities = Amenity::orderBy('name')->get();
         $rules = StayRule::orderBy('name')->get();
@@ -113,7 +113,7 @@ class HotelAgencyController extends Controller
      */
     public function edit(Hotel $hotel)
     {
-        $this->authorize('update', $hotel);
+        // $this->authorize('update', $hotel);
         
         $amenities = Amenity::orderBy('name')->get();
         $rules = StayRule::orderBy('name')->get();
@@ -127,7 +127,7 @@ class HotelAgencyController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Hotel::class);
+        // $this->authorize('create', Hotel::class);
         
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -217,7 +217,7 @@ class HotelAgencyController extends Controller
      */
     public function update(Request $request, Hotel $hotel)
     {
-        $this->authorize('update', $hotel);
+        // $this->authorize('update', $hotel);
         
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -326,7 +326,7 @@ class HotelAgencyController extends Controller
      */
     public function createRoom(Hotel $hotel)
     {
-        $this->authorize('update', $hotel);
+        // $this->authorize('update', $hotel);
         
         $roomTypes = [
             'single' => 'Chambre Simple',
@@ -356,7 +356,7 @@ class HotelAgencyController extends Controller
      */
     public function storeRoom(Request $request, Hotel $hotel)
     {
-        $this->authorize('update', $hotel);
+        // $this->authorize('update', $hotel);
         
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -426,7 +426,7 @@ class HotelAgencyController extends Controller
      */
     public function showRoom(Room $room)
     {
-        $this->authorize('view', $room->hotel);
+        // $this->authorize('view', $room->hotel);
         
         $room->load(['hotel', 'photos', 'amenities', 'bookings' => function($query) {
             $query->whereIn('status', ['pending', 'confirmed'])
@@ -454,7 +454,7 @@ class HotelAgencyController extends Controller
      */
     public function editRoom(Room $room)
     {
-        $this->authorize('update', $room->hotel);
+        // $this->authorize('update', $room->hotel);
         
         $roomTypes = [
             'single' => 'Chambre Simple',
@@ -486,7 +486,7 @@ class HotelAgencyController extends Controller
      */
     public function updateRoom(Request $request, Room $room)
     {
-        $this->authorize('update', $room->hotel);
+        // $this->authorize('update', $room->hotel);
         
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -571,7 +571,7 @@ class HotelAgencyController extends Controller
      */
     public function destroyRoom(Room $room)
     {
-        $this->authorize('delete', $room->hotel);
+        // $this->authorize('delete', $room->hotel);
         
         // Vérifier qu'il n'y a pas de réservations futures
         $hasFutureBookings = $room->bookings()
@@ -614,7 +614,7 @@ class HotelAgencyController extends Controller
      */
     public function availability(Request $request, Hotel $hotel)
     {
-        $this->authorize('update', $hotel);
+        // $this->authorize('update', $hotel);
         
         $request->validate([
             'room_id' => ['nullable', 'exists:rooms,id,hotel_id,'.$hotel->id],

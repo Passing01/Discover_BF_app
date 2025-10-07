@@ -72,11 +72,4 @@ EXPOSE 10000
 
 
 # Démarrer les services
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-
-# Nettoyage des caches Laravel avant le lancement
-RUN php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan optimize:clear
+ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]

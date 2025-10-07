@@ -11,8 +11,11 @@ services:
       # Installer les dépendances
       composer install --no-interaction --no-dev --optimize-autoloader
       
-      # Créer la table de cache si elle n'existe pas
-      php artisan cache:table
+      # Créer le dossier de stockage et les liens symboliques
+      mkdir -p storage/framework/{sessions,views,cache}
+      chmod -R 775 storage/
+      
+      # Créer les tables nécessaires
       php artisan migrate --force
       
       # Installer et builder les assets
@@ -28,15 +31,9 @@ services:
       php artisan optimize
       php artisan view:cache
       php artisan event:cache
-      # Démarrer le conteneur
-      docker run -p 10000:10000 \
-        -e APP_ENV=production \
-        -e APP_DEBUG=false \
-        -e APP_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
-        -e VITE_APP_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
-        -e MIX_ASSET_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
-        -e FORCE_HTTPS=true \
-        discover-bf
+      
+      # Démarrer le serveur web
+      php artisan serve --host=0.0.0.0 --port=10000
     envVars:
       - key: APP_ENV
         value: production
@@ -73,6 +70,13 @@ services:
         fromDatabase:
           name: discover_bf_db
           property: password
+      # Configuration du cache
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: file
 
 databases:
   - name: discover_bf_db

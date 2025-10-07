@@ -42,9 +42,13 @@ COPY . .
 # Créer les répertoires nécessaires et configurer les permissions
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
-    && touch database/database.sqlite \
-    && chown -R www-data:www-data storage bootstrap/cache public database \
+    && chown -R www-data:www-data storage bootstrap/cache public \
     && chmod -R 775 storage bootstrap/cache
+
+# Définir les variables d'environnement pour le cache et les files d'attente
+ENV CACHE_DRIVER=file \
+    SESSION_DRIVER=file \
+    QUEUE_CONNECTION=sync
 
 # Installer les dépendances Node et construire les assets
 RUN npm ci --prefer-offline --no-audit --progress=false \

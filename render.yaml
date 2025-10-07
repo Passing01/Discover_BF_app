@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: discover-bf
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    buildCommand: |
+      docker build -t discover-bf .
+    startCommand: |
+      # Vérifier si le dossier build existe, sinon le créer
+      if [ ! -d "public/build" ]; then
+        mkdir -p public/build
+      fi
+      # Exécuter les migrations et optimiser le cache
+      php artisan migrate --force
+      php artisan optimize:clear
+      php artisan optimize
+      php artisan view:cache
+      php artisan event:cache
+      # Démarrer le conteneur
+      docker run -p 10000:10000 \
+        -e APP_ENV=production \
+        -e APP_DEBUG=false \
+        -e APP_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
+        -e VITE_APP_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
+        -e MIX_ASSET_URL=https://${RENDER_EXTERNAL_HOSTNAME} \
+        -e FORCE_HTTPS=true \
+        discover-bf
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: VITE_APP_URL
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: MIX_ASSET_URL
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: NODE_ENV
+        value: production
+      - key: FORCE_HTTPS
+        value: "true"
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: discover_bf_db
+          property: connectionString
+          envVarName: DATABASE_URL
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        fromDatabase:
+          name: discover_bf_db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: discover_bf_db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: discover_bf_db
+          property: password
+
+databases:
+  - name: discover_bf_db
+    databaseName: discover_bf
+    user: discover_bf_user
+    plan: free

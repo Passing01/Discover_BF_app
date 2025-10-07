@@ -35,5 +35,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Use Bootstrap 5 pagination views globally
         Paginator::useBootstrapFive();
+
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 }

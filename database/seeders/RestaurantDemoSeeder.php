@@ -113,6 +113,18 @@ class RestaurantDemoSeeder extends Seeder
                     'status' => 'confirmed',
                 ]);
             }
+
+            // Associer le restaurant à l'utilisateur restaurant@discoverbf.test
+            $restaurantManager = \App\Models\User::where('email', 'restaurant@discoverbf.test')->first();
+            if ($restaurantManager && isset($restaurant)) {
+                $restaurant->update(['owner_id' => $restaurantManager->id]);
+                \Log::info('Restaurant associé au gestionnaire', [
+                    'restaurant_id' => $restaurant->id,
+                    'restaurant_name' => $restaurant->name,
+                    'manager_id' => $restaurantManager->id,
+                    'manager_email' => $restaurantManager->email
+                ]);
+            }
         }
     }
 }

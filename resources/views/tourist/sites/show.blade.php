@@ -58,6 +58,15 @@
       <div class="panel-cream rounded-20">
         <div class="px-3 py-2 fw-semibold">Contacter un guide</div>
         <div class="p-3">
+          @php
+            $isGuideAffiliated = false;
+            if (auth()->check() && auth()->user()->role === 'guide') {
+                $isGuideAffiliated = \App\Models\GuideContact::where('site_id', $site->id)
+                    ->where('guide_id', auth()->id())
+                    ->exists();
+            }
+          @endphp
+
           @if($guide)
             <div class="d-flex align-items-center mb-3">
               <div class="me-2">
@@ -68,6 +77,16 @@
                 <div class="small text-muted">{{ $guide->email }}</div>
               </div>
             </div>
+            @if($isGuideAffiliated)
+              <div class="alert alert-warning mb-3">
+                <i class="bi bi-exclamation-triangle me-1"></i> 
+                @if(auth()->check() && $guide && auth()->id() === $guide->id)
+                  <strong>Action non autorisée :</strong> Vous ne pouvez pas vous envoyer de message à vous-même.
+                @else
+                  Vous êtes déjà affilié à ce site touristique.
+                @endif
+              </div>
+            @endif
           @else
             <div class="alert alert-warning">Aucun guide n'est disponible pour le moment. Vous pouvez quand même envoyer votre demande.</div>
           @endif
@@ -94,7 +113,13 @@
               <textarea name="message" rows="4" class="form-control @error('message') is-invalid @enderror" placeholder="Dates souhaitées, nombre de personnes, préférences..." required>{{ old('message') }}</textarea>
               @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <button type="submit" class="btn btn-orange w-100">Envoyer la demande</button>
+            <button type="submit" class="btn btn-orange w-100" @if($isGuideAffiliated) disabled @endif>
+              @if($isGuideAffiliated)
+                <i class="bi bi-check-circle me-1"></i> Déjà affilié
+              @else
+                Envoyer la demande
+              @endif
+            </button>
           </form>
         </div>
       </div>

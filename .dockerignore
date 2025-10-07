@@ -1,0 +1,60 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Environment files
+.env
+.env.*.local
+!.env.example
+
+# Storage directories
+/storage/*
+!/storage/framework/
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+
+# Build directories
+/public/build
+/public/hot
+/public/storage
+
+# Logs
+*.log
+
+# IDE specific files
+.idea
+.vscode
+*.sublime-*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+/coverage
+/phpunit.xml
+/phpunit.result.cache
+
+# Local development
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

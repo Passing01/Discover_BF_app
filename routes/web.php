@@ -18,6 +18,7 @@ use App\Http\Controllers\TouristBookingController;
 use App\Http\Controllers\AgencyBookingController;
 use App\Http\Controllers\TaxiController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\SiteManagerDashboardController;
 use App\Http\Controllers\BusBookingController;
 use App\Http\Controllers\FlightController;
 use App\Http\Controllers\TravelAssistantController;
@@ -25,6 +26,11 @@ use App\Http\Controllers\TouristCalendarController;
 use App\Http\Controllers\TouristSiteController;
 use App\Http\Controllers\OrganizerProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SiteManagerSiteController;
+use App\Http\Controllers\SiteManagerBookingController;
+use App\Http\Controllers\HotelManagerController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\SiteManagerProfileController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -71,6 +77,29 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified', 'active'])->name('dashboard');
 
 Route::middleware(['auth','active'])->group(function () {
+    // Routes pour les gestionnaires de sites
+    Route::prefix('site-manager')->name('site-manager.')->middleware(['site_manager'])->group(function () {
+        // Tableau de bord
+        Route::get('/dashboard', [SiteManagerDashboardController::class, 'index'])->name('dashboard');
+        
+        // Gestion des sites
+        Route::resource('sites', 'App\Http\Controllers\SiteManagerSiteController');
+        Route::post('sites/{site}/toggle-status', [SiteManagerSiteController::class, 'toggleStatus'])->name('sites.toggle-status');
+        
+        // Gestion des réservations
+        Route::get('bookings', [SiteManagerBookingController::class, 'index'])->name('bookings.index');
+        Route::get('bookings/{booking}', [SiteManagerBookingController::class, 'show'])->name('bookings.show');
+        Route::put('bookings/{booking}/status', [SiteManagerBookingController::class, 'updateStatus'])->name('bookings.update-status');
+        Route::get('calendar', [SiteManagerBookingController::class, 'calendar'])->name('calendar');
+        Route::get('calendar/events', [SiteManagerBookingController::class, 'calendarEvents'])->name('calendar.events');
+        Route::get('bookings/export', [SiteManagerBookingController::class, 'export'])->name('bookings.export');
+        
+        // Profil
+        Route::get('/profile', [SiteManagerProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [SiteManagerProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [SiteManagerProfileController::class, 'updatePassword'])->name('profile.password.update');
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -151,13 +180,42 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/tourist/bookings/{booking}', [TouristBookingController::class, 'show'])->name('tourist.bookings.show');
     Route::post('/tourist/bookings/{booking}/cancel', [TouristBookingController::class, 'cancel'])->name('tourist.bookings.cancel');
 
-    // Guide web flow
-    Route::prefix('guide')->name('guide.')->middleware('guide')->group(function () {
+    // Routes pour les gestionnaires de sites
+    Route::prefix('site-manager')->name('site-manager.')->middleware(['auth', 'active', 'site_manager'])->group(function () {
+        // Tableau de bord
+        Route::get('/dashboard', [SiteManagerDashboardController::class, 'index'])->name('dashboard');
+        
+        // Profil
+        Route::get('/profile', [\App\Http\Controllers\SiteManagerProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [\App\Http\Controllers\SiteManagerProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [\App\Http\Controllers\SiteManagerProfileController::class, 'updatePassword'])->name('profile.password.update');
+        
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\SiteManagerNotificationController::class, 'index'])->name('notifications.index');
+        Route::put('/notifications/preferences', [\App\Http\Controllers\SiteManagerNotificationController::class, 'updatePreferences'])->name('notifications.preferences.update');
+        Route::post('/notifications/mark-all-read', [\App\Http\Controllers\SiteManagerNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+        Route::post('/notifications/{notification}/mark-read', [\App\Http\Controllers\SiteManagerNotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+        Route::post('/notifications/subscribe-push', [\App\Http\Controllers\SiteManagerNotificationController::class, 'subscribePush'])->name('notifications.push.subscribe');
+        
+        // Paramètres
+        Route::get('/settings/dashboard', [\App\Http\Controllers\SiteManagerSettingsController::class, 'index'])->name('settings.dashboard');
+        Route::put('/settings/dashboard', [\App\Http\Controllers\SiteManagerSettingsController::class, 'update'])->name('settings.dashboard.update');
+        Route::post('/settings/dashboard/reset', [\App\Http\Controllers\SiteManagerSettingsController::class, 'resetToDefaults'])->name('settings.dashboard.reset');
+        Route::put('/settings/theme', [\App\Http\Controllers\SiteManagerSettingsController::class, 'updateTheme'])->name('settings.theme.update');
+        Route::put('/settings/timezone', [\App\Http\Controllers\SiteManagerSettingsController::class, 'updateTimezone'])->name('settings.timezone.update');
+        Route::get('/settings/export', [\App\Http\Controllers\SiteManagerSettingsController::class, 'export'])->name('settings.export');
+    });
+
+    // Routes pour les guides
+    Route::prefix('guide')->name('guide.')->middleware(['auth', 'active', 'guide'])->group(function () {
         Route::get('/dashboard', [GuideDashboardController::class, 'index'])->name('dashboard');
         Route::post('/availability', [GuideDashboardController::class, 'updateAvailability'])->name('availability.update');
-        Route::get('/messages', [GuideDashboardController::class, 'messagesIndex'])->name('messages.index');
-        Route::post('/messages/{contact}/read', [GuideDashboardController::class, 'messagesMarkRead'])->name('messages.read');
-        Route::post('/messages/{contact}/close', [GuideDashboardController::class, 'messagesClose'])->name('messages.close');
+        
+        // Routes pour la messagerie des guides
+        Route::get('/messages', [GuideDashboardController::class, 'messages'])->name('messages.index');
+        Route::get('/messages/{contact}', [GuideDashboardController::class, 'showMessage'])->name('messages.show');
+        Route::post('/messages/{contact}/read', [GuideDashboardController::class, 'markAsRead'])->name('messages.read');
+
         Route::get('/profile', [GuideDashboardController::class, 'editProfile'])->name('profile.edit');
         Route::post('/profile', [GuideDashboardController::class, 'updateProfile'])->name('profile.update');
     });
@@ -228,7 +286,115 @@ Route::middleware(['auth','active'])->group(function () {
     // Role dashboards (auth protected; each controller enforces role)
     Route::middleware('auth')->group(function () {
         Route::get('/organizer/dashboard', [\App\Http\Controllers\OrganizerDashboardController::class, 'index'])->name('organizer.dashboard');
-        Route::get('/hotel/dashboard', [\App\Http\Controllers\HotelManagerDashboardController::class, 'index'])->name('hotel.dashboard');
+        
+        // Routes pour les gestionnaires d'hôtel
+        Route::prefix('hotel-manager')->name('hotel-manager.')->group(function () {
+            // Tableau de bord
+            Route::get('/dashboard', [\App\Http\Controllers\HotelManagerController::class, 'dashboard'])->name('dashboard');
+            
+            // Liste de toutes les chambres
+            Route::get('/rooms', [\App\Http\Controllers\HotelManagerController::class, 'listRooms'])->name('rooms.index');
+    
+            // Gestion des hôtels
+            Route::resource('hotels', HotelManagerController::class)->except(['show']);
+            Route::get('hotels/{hotel}/toggle-status', [HotelManagerController::class, 'toggleStatus'])->name('hotels.toggle-status');
+            Route::get('hotels/{hotel}/toggle-featured', [HotelManagerController::class, 'toggleFeatured'])->name('hotels.toggle-featured');
+            
+            // Gestion des chambres
+            Route::prefix('hotels/{hotel}')->group(function () {
+                // Routes pour les chambres
+                Route::get('rooms', [HotelManagerController::class, 'rooms'])->name('hotels.rooms.index');
+                Route::get('rooms/list', [HotelManagerController::class, 'listRooms'])->name('hotel-manager.rooms.index');
+                Route::get('rooms/create', [HotelManagerController::class, 'createRoom'])->name('hotels.rooms.create');
+                Route::post('rooms', [HotelManagerController::class, 'storeRoom'])->name('hotels.rooms.store');
+                Route::get('rooms/{room}', [HotelManagerController::class, 'showRoom'])->name('hotels.rooms.show');
+                Route::get('rooms/{room}/edit', [HotelManagerController::class, 'editRoom'])->name('hotels.rooms.edit');
+                Route::put('rooms/{room}', [HotelManagerController::class, 'updateRoom'])->name('hotels.rooms.update');
+                Route::delete('rooms/{room}', [HotelManagerController::class, 'destroyRoom'])->name('hotels.rooms.destroy');
+                Route::post('rooms/{room}/toggle-availability', [HotelManagerController::class, 'toggleRoomAvailability'])->name('hotels.rooms.toggle-availability');
+                
+                // Gestion des photos des chambres
+                Route::post('rooms/{room}/photos', [HotelManagerController::class, 'storeRoomPhoto'])->name('hotels.rooms.photos.store');
+                Route::delete('photos/{photo}', [HotelManagerController::class, 'destroyPhoto'])->name('hotels.photos.destroy');
+                
+                // Gestion des réservations
+                Route::prefix('bookings')->name('hotel-manager.bookings.')->group(function() {
+                    Route::get('/', [BookingController::class, 'index'])->name('index');
+                    Route::get('/create', [BookingController::class, 'create'])->name('create');
+                    Route::post('/', [BookingController::class, 'store'])->name('store');
+                    Route::get('/{booking}', [BookingController::class, 'show'])->name('show');
+                    Route::get('/{booking}/edit', [BookingController::class, 'edit'])->name('edit');
+                    Route::put('/{booking}', [BookingController::class, 'update'])->name('update');
+                    Route::delete('/{booking}', [BookingController::class, 'destroy'])->name('destroy');
+                    
+                    // Mise à jour du statut d'une réservation
+                    Route::put('/{booking}/status', [BookingController::class, 'updateStatus'])->name('update-status');
+                    
+                    // Export des réservations
+                    Route::get('/export', [BookingController::class, 'export'])->name('export');
+                    
+                    // Facture
+                    Route::get('/{booking}/invoice', [BookingController::class, 'invoice'])->name('invoice');
+                    Route::get('/{booking}/invoice/download', [BookingController::class, 'downloadInvoice'])->name('invoice.download');
+                    
+                    // Envoi de confirmation
+                    Route::post('/{booking}/send-confirmation', [BookingController::class, 'sendConfirmation'])->name('send-confirmation');
+                });
+                
+                // Calendrier
+                Route::get('calendar', [HotelManagerController::class, 'calendar'])->name('hotels.calendar');
+                Route::get('calendar/events', [HotelManagerController::class, 'getCalendarEvents'])->name('hotels.calendar.events');
+                
+                // Rapports
+                Route::get('reports', [HotelManagerController::class, 'reports'])->name('hotels.reports');
+                Route::get('reports/export', [HotelManagerController::class, 'exportReports'])->name('hotels.reports.export');
+                
+                // Paramètres
+                Route::get('settings', [HotelManagerController::class, 'settings'])->name('hotels.settings');
+                Route::put('settings', [HotelManagerController::class, 'updateSettings'])->name('hotels.settings.update');
+            });
+            // Gestion des hôtels
+            Route::resource('hotels', \App\Http\Controllers\HotelManagerController::class)->except(['destroy']);
+            Route::post('/hotels/{hotel}/toggle-status', [\App\Http\Controllers\HotelManagerController::class, 'toggleStatus'])->name('hotels.toggle-status');
+            Route::post('/hotels/{hotel}/toggle-featured', [\App\Http\Controllers\HotelManagerController::class, 'toggleFeatured'])->name('hotels.toggle-featured');
+            
+            // Gestion des chambres
+            Route::prefix('hotels/{hotel}')->group(function () {
+                // Routes pour les chambres
+                Route::get('rooms', [\App\Http\Controllers\HotelManagerController::class, 'rooms'])->name('hotels.rooms.index');
+                Route::get('rooms/create', [\App\Http\Controllers\HotelManagerController::class, 'createRoom'])->name('hotels.rooms.create');
+                Route::post('rooms', [\App\Http\Controllers\HotelManagerController::class, 'storeRoom'])->name('hotels.rooms.store');
+                Route::get('rooms/{room}', [\App\Http\Controllers\HotelManagerController::class, 'showRoom'])->name('hotels.rooms.show');
+                Route::get('rooms/{room}/edit', [\App\Http\Controllers\HotelManagerController::class, 'editRoom'])->name('hotels.rooms.edit');
+                Route::put('rooms/{room}', [\App\Http\Controllers\HotelManagerController::class, 'updateRoom'])->name('hotels.rooms.update');
+                Route::delete('rooms/{room}', [\App\Http\Controllers\HotelManagerController::class, 'destroyRoom'])->name('hotels.rooms.destroy');
+                
+                // Gestion des photos des chambres
+                Route::prefix('rooms/{room}')->group(function () {
+                    Route::post('/photos', [\App\Http\Controllers\RoomPhotoController::class, 'store'])->name('hotels.rooms.photos.store');
+                    Route::delete('/photos/{photo}', [\App\Http\Controllers\RoomPhotoController::class, 'destroy'])->name('hotels.rooms.photos.destroy');
+                    Route::post('/photos/{photo}/set-as-main', [\App\Http\Controllers\RoomPhotoController::class, 'setAsMain'])->name('hotels.rooms.photos.set-main');
+                });
+                
+                // Gestion des réservations
+                Route::get('bookings', [\App\Http\Controllers\HotelManagerController::class, 'bookings'])->name('hotels.bookings.index');
+                Route::get('bookings/{booking}', [\App\Http\Controllers\HotelManagerController::class, 'showBooking'])->name('hotels.bookings.show');
+                Route::put('bookings/{booking}/status', [\App\Http\Controllers\HotelManagerController::class, 'updateBookingStatus'])->name('hotels.bookings.update-status');
+                
+                // Calendrier
+                Route::get('calendar', [\App\Http\Controllers\HotelManagerController::class, 'calendar'])->name('hotels.calendar');
+                Route::get('calendar/events', [\App\Http\Controllers\HotelManagerController::class, 'getCalendarEvents'])->name('hotels.calendar.events');
+                
+                // Rapports
+                Route::get('reports', [\App\Http\Controllers\HotelManagerController::class, 'reports'])->name('hotels.reports');
+                Route::get('reports/export', [\App\Http\Controllers\HotelManagerController::class, 'exportReports'])->name('hotels.reports.export');
+                
+                // Paramètres
+                Route::get('settings', [\App\Http\Controllers\HotelManagerController::class, 'settings'])->name('hotels.settings');
+                Route::put('settings', [\App\Http\Controllers\HotelManagerController::class, 'updateSettings'])->name('hotels.settings.update');
+            });
+        });
+        
         Route::get('/driver/dashboard', [\App\Http\Controllers\DriverDashboardController::class, 'index'])->name('driver.dashboard');
     });
 
@@ -290,6 +456,10 @@ Route::middleware(['auth','active'])->group(function () {
     Route::patch('/agency/hotels/{hotel}', [HotelAgencyController::class, 'update'])->name('agency.hotels.update');
     Route::get('/agency/hotels/{hotel}/rooms/create', [HotelAgencyController::class, 'createRoom'])->name('agency.rooms.create');
     Route::post('/agency/hotels/{hotel}/rooms', [HotelAgencyController::class, 'storeRoom'])->name('agency.rooms.store');
+    
+    // Gestion des clients de l'hôtel
+    Route::get('/agency/hotels/{hotel}/customers', [\App\Http\Controllers\HotelManager\CustomerController::class, 'index'])->name('agency.hotels.customers.index');
+    Route::get('/agency/hotels/{hotel}/customers/{user}', [\App\Http\Controllers\HotelManager\CustomerController::class, 'show'])->name('agency.hotels.customers.show');
 
     // Agency: Reservations management
     Route::get('/agency/reservations', [AgencyBookingController::class, 'index'])->name('agency.reservations.index');
@@ -361,8 +531,30 @@ Route::middleware(['auth','active'])->group(function () {
 
 require __DIR__.'/auth.php';
 
+// Route pour récupérer les informations d'un utilisateur (sécurisée)
+Route::get('/users/{user}/details', function (\App\Models\User $user) {
+    // Vérifier que l'utilisateur est authentifié et a les droits nécessaires
+    if (!auth()->check() || (auth()->id() !== $user->id && !auth()->user()->hasRole('hotel_manager'))) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+    
+    // Charger les relations nécessaires
+    $user->load('profile');
+    
+    // Retourner les données de l'utilisateur
+    return response()->json($user);
+})->middleware('auth', 'active')->name('users.details');
+
+// Inclure les routes des gestionnaires d'hôtel
+require __DIR__.'/hotel-manager.php';
+
 // Inclure les routes de la communauté
 require __DIR__.'/community.php';
+
+require __DIR__.'/restaurant.php';
+
+// Ne pas inclure les routes API ici. Elles sont déjà chargées par le RouteServiceProvider
+// avec le préfixe /api et le middleware approprié.
 
 // Routes de la communauté
 Route::middleware(['auth'])->group(function () {

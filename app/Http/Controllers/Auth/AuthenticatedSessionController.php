@@ -35,6 +35,11 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
         
+        // Vérifier si l'utilisateur est un gestionnaire de restaurant
+        if ($user->hasRole('restaurant_manager')) {
+            return redirect()->intended(route('restaurant-manager.dashboard', absolute: false));
+        }
+        
         // Gestion de l'onboarding pour les autres rôles
         if ($user->role !== 'tourist' && empty($user->role_onboarded_at)) {
             return redirect()->route('onboarding.start');
@@ -49,7 +54,11 @@ class AuthenticatedSessionController extends Controller
             case 'event_organizer':
                 return redirect()->intended(route('organizer.dashboard', absolute: false));
             case 'hotel_manager':
-                return redirect()->intended(route('hotel.manager.dashboard', absolute: false));
+                return redirect()->intended(route('hotel-manager.dashboard', absolute: false));
+            case 'site_manager':
+                return redirect()->intended(route('site-manager.dashboard', absolute: false));
+            case 'restaurant_manager':
+                return redirect()->intended(route('restaurant-manager.dashboard', absolute: false));
             default:
                 return redirect()->intended('/');
         }

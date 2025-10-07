@@ -4,8 +4,15 @@ namespace App\Providers;
 
 use App\Models\CommunityPost;
 use App\Models\CommunityComment;
+use App\Models\Hotel;
+use App\Models\Restaurant;
+use App\Models\RestaurantReservation;
 use App\Policies\CommunityPostPolicy;
 use App\Policies\CommunityCommentPolicy;
+use App\Policies\HotelCustomerPolicy;
+use App\Policies\ClientPolicy;
+use App\Policies\RestaurantPolicy;
+use App\Policies\ReservationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -19,6 +26,10 @@ class AuthServiceProvider extends ServiceProvider
         CommunityPost::class => CommunityPostPolicy::class,
         CommunityComment::class => CommunityCommentPolicy::class,
         \App\Models\Site\Event::class => \App\Policies\EventPolicy::class,
+        Hotel::class => HotelCustomerPolicy::class,
+        User::class => ClientPolicy::class,
+        Restaurant::class => RestaurantPolicy::class,
+        RestaurantReservation::class => ReservationPolicy::class,
     ];
 
     /**

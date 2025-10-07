@@ -52,13 +52,13 @@ services:
         value: production
       - key: FORCE_HTTPS
         value: "true"
+      # Configuration de la base de données PostgreSQL
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
         fromDatabase:
           name: discover_bf_db
-          property: connectionString
-          envVarName: DATABASE_URL
+          property: connectionString.host
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE

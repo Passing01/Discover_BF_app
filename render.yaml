@@ -6,6 +6,10 @@ services:
     plan: free
     buildCommand: |
       docker build -t discover-bf .
+      composer install --no-interaction --no-dev --optimize-autoloader
+      php artisan cache:table
+      php artisan migrate --force
+      npm install && npm run build
     startCommand: |
       # Vérifier si le dossier build existe, sinon le créer
       if [ ! -d "public/build" ]; then

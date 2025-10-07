@@ -6,17 +6,24 @@ services:
     plan: free
     buildCommand: |
       docker build -t discover-bf .
+      
+    startCommand: |
+      # Installer les dépendances
       composer install --no-interaction --no-dev --optimize-autoloader
+      
+      # Créer la table de cache si elle n'existe pas
       php artisan cache:table
       php artisan migrate --force
+      
+      # Installer et builder les assets
       npm install && npm run build
-    startCommand: |
-      # Vérifier si le dossier build existe, sinon le créer
+      
+      # Créer le dossier build s'il n'existe pas
       if [ ! -d "public/build" ]; then
         mkdir -p public/build
       fi
-      # Exécuter les migrations et optimiser le cache
-      php artisan migrate --force
+      
+      # Optimiser le cache
       php artisan optimize:clear
       php artisan optimize
       php artisan view:cache

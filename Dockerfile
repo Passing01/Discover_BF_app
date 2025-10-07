@@ -1,17 +1,23 @@
 FROM php:8.2-fpm
 
-# Installer les dépendances système
+# Installer les dépendances système avec l'extension GD
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     postgresql-client \
     libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    libzip-dev \
     unzip \
     git \
     curl \
     gnupg \
     ca-certificates \
-    && docker-php-ext-install pdo pdo_pgsql pgsql
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql pgsql zip
 
 # Installer Node.js 20.x
 RUN mkdir -p /etc/apt/keyrings \

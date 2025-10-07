@@ -16,7 +16,7 @@ export default defineConfig({
         https: true,
         hmr: {
             protocol: 'wss',
-            host: 'nasa-bioscience.onrender.com'
+            host: 'discover-bf-app.onrender.com'
         }
     },
     // server: {

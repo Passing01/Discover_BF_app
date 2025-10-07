@@ -60,5 +60,6 @@ RUN apt-get clean \
 # Exposer le port
 EXPOSE 10000
 
+
 # Démarrer les services
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -72,4 +72,4 @@ EXPOSE 10000
 
 
 # Démarrer les services
-ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

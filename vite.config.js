@@ -12,22 +12,22 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    server: {
-        https: true,
-        hmr: {
-            protocol: 'wss',
-            host: 'discover-bf-app.onrender.com'
-        }
-    },
     // server: {
-    //     host: 'localhost',
-    //     port: 5173,
-    //     strictPort: true,
+    //     https: true,
     //     hmr: {
-    //       host: 'localhost',
-    //       protocol: 'ws',
+    //         protocol: 'wss',
+    //         host: 'discover-bf-app.onrender.com'
     //     }
-    //   },
+    // },
+    server: {
+        host: 'localhost',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+          host: 'localhost',
+          protocol: 'ws',
+        }
+      },
     build: {
         manifest: 'manifest.json',
         outDir: 'public/build',

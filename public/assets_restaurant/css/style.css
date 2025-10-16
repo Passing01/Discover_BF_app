@@ -527,7 +527,9 @@ pre {
   padding-right: 15px;
   padding-left: 15px;
   margin-right: auto;
-  margin-left: auto; }
+  margin-left: auto; 
+  margin-top: 10%;
+}
 
 .row {
   display: flex;
@@ -7584,7 +7586,7 @@ sub {
   width: 15.1875rem;
   display: inline-block;
   text-align: left;
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 0;
   background: #111B27;
@@ -7674,8 +7676,8 @@ sub {
 
 .header {
   height: 5rem;
-  z-index: 1;
-  position: relative;
+  z-index: 1000;
+  position: fixed;
   padding: 0 0.9375rem;
   background: #fff;
   margin-left: 15.1875rem;
@@ -8140,7 +8142,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
   width: 15.1875rem;
   padding-bottom: 112px;
   height: 100%;
-  position: absolute;
+  position: fixed;
   top: 5rem;
   padding-top: 0;
   z-index: 99;

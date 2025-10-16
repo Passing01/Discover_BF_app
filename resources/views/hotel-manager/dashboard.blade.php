@@ -1,6 +1,6 @@
 @section('title', 'Tableau de bord')
 
-@extends('layouts.hotel-manager')
+@extends('layouts.hotel')
 
 @section('content')
 <div class="container py-4">

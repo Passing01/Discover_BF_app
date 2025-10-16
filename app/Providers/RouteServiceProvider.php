@@ -37,6 +37,9 @@ class RouteServiceProvider extends ServiceProvider
             // Charger les routes des restaurants
             Route::middleware('web')
                 ->group(base_path('routes/restaurant.php'));
+
+            Route::middleware('auth')
+                ->group(base_path('routes/auth.php'));
         });
     }
 

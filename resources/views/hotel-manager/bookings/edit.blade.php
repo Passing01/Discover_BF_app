@@ -1,4 +1,4 @@
-@extends('layouts.hotel-manager')
+@extends('layouts.hotel')
 
 @section('content')
 <div class="py-8">

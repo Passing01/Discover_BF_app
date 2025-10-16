@@ -1,4 +1,4 @@
-@extends('layouts.hotel-manager')
+@extends('layouts.hotel')
 
 @section('title', 'Gestion des clients - ' . $hotel->name)
 

@@ -1,4 +1,4 @@
-@extends('layouts.hotel-manager')
+@extends('layouts.hotel')
 
 @php
     $isEdit = isset($client) && $client->exists;

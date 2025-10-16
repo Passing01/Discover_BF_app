@@ -1,4 +1,4 @@
-@extends('layouts.hotel-manager')
+@extends('layouts.hotel')
 @section('title', $hotel->name)
 @section('content')
     @push('styles')

@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
 use Spatie\Permission\PermissionRegistrar;
-use Illuminate\Support\Facades\URL;
+// use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,9 +36,5 @@ class AppServiceProvider extends ServiceProvider
 
         // Use Bootstrap 5 pagination views globally
         Paginator::useBootstrapFive();
-
-        // if (config('app.env') === 'production') {
-        //     URL::forceScheme('https');
-        // }
     }
 }

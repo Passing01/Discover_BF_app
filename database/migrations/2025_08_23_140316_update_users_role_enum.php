@@ -12,13 +12,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Créer un type enum personnalisé avec les nouveaux rôles
-        DB::statement("ALTER TABLE users DROP CONSTRAINT users_role_check");
+        // Vérifier si la contrainte existe avant de la supprimer
+        $constraintExists = DB::select("SELECT * FROM information_schema.TABLE_CONSTRAINTS 
+            WHERE CONSTRAINT_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'users' 
+            AND CONSTRAINT_NAME = 'users_role_check'");
+            
+        if (count($constraintExists) > 0) {
+            DB::statement("ALTER TABLE users DROP CONSTRAINT users_role_check");
+        }
         
         // Mettre à jour la colonne role avec les nouveaux rôles
         DB::statement("ALTER TABLE users 
-            ALTER COLUMN role TYPE VARCHAR(255),
-            ALTER COLUMN role SET DEFAULT 'tourist'");
+            MODIFY COLUMN role VARCHAR(255) DEFAULT 'tourist'");
             
         // Ajouter une nouvelle contrainte check avec les rôles mis à jour
         DB::statement("ALTER TABLE users 

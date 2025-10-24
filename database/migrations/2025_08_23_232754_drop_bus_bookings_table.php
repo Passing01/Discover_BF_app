@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bus_bookings', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('bus_bookings');
     }
 
     /**
@@ -21,8 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bus_bookings', function (Blueprint $table) {
-            //
-        });
+        // Ne rien faire ici car nous ne voulons pas recréer la table en cas de rollback
+        // car la migration suivante s'en chargera
     }
 };

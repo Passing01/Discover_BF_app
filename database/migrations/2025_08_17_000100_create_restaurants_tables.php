@@ -14,6 +14,9 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->string('address')->nullable();
             $table->string('city')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('map_url')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->text('description')->nullable();
@@ -21,6 +24,8 @@ return new class extends Migration {
             $table->float('rating')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('cover_image')->nullable();
+            $table->json('gallery')->nullable();
+            $table->json('video_urls')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -32,6 +37,8 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('image_path')->nullable();
+            $table->json('gallery')->nullable();
+            $table->json('video_urls')->nullable();
             $table->string('category')->nullable();
             $table->boolean('is_available')->default(true);
             $table->timestamps();
@@ -46,6 +53,7 @@ return new class extends Migration {
             $table->unsignedInteger('party_size')->default(2);
             $table->string('status')->default('requested'); // requested, confirmed, cancelled
             $table->string('special_requests')->nullable();
+            $table->json('order_items')->nullable();
             $table->timestamps();
         });
     }

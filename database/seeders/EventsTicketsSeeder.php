@@ -23,6 +23,9 @@ class EventsTicketsSeeder extends Seeder
         $venues = ['Maison du Peuple','Stade du 4-Août','Place des Artistes','Centre Culturel','Palais des Sports'];
 
         $events = [];
+        $existing = collect(Schema::getColumnListing('events'))
+            ->flip();
+
         foreach (range(1, 20) as $i) {
             $start = $now->copy()->addDays(5 + $i)->setTime(rand(14,20), [0,30][array_rand([0,30])]);
             $end = $start->copy()->addHours(rand(2,5));
@@ -33,10 +36,9 @@ class EventsTicketsSeeder extends Seeder
             $eventName = "$cat — Évènement $i";
             $row = [
                 'id' => (string) Str::uuid(),
-                // base schema from 2025_08_16_002000_create_sites_and_events_tables
                 'title' => $eventName,
-                'name' => $eventName, // Champ obligatoire pour la table events
-                'description' => $eventName, // Champ obligatoire pour la table events
+                'name' => $eventName,
+                'description' => $eventName,
                 'city' => $city,
                 'category' => $cat,
                 'venue' => $venue,
@@ -53,15 +55,15 @@ class EventsTicketsSeeder extends Seeder
                 'updated_at' => now(),
             ];
 
-            // If extended columns exist, fill them too
-            if (Schema::hasColumn('events', 'image_path')) {
+            if ($existing->has('image_path')) {
                 $row['image_path'] = $row['photo_url'];
             }
-            if (Schema::hasColumn('events', 'organizer_id') && $organizer) {
+            if ($existing->has('organizer_id') && $organizer) {
                 $row['organizer_id'] = $organizer->id;
             }
 
-            $events[] = $row;
+            // Filtrer dynamiquement selon les colonnes existantes
+            $events[] = array_intersect_key($row, $existing->all());
         }
 
         DB::table('events')->insertOrIgnore($events);

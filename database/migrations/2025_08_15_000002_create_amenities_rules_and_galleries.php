@@ -35,18 +35,28 @@ return new class extends Migration
 
         Schema::create('hotel_photos', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('hotel_id');
+            $table->foreignUuid('hotel_id')->constrained('hotels')->cascadeOnDelete();
             $table->string('path');
             $table->unsignedInteger('position')->default(0);
+            $table->boolean('is_main')->default(false);
+            $table->string('original_name');
+            $table->string('mime_type');
+            $table->unsignedInteger('size');
             $table->timestamps();
         });
 
         Schema::create('room_photos', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('room_id');
+            $table->foreignUuid('room_id')->constrained('rooms')->cascadeOnDelete();
             $table->string('path');
             $table->unsignedInteger('position')->default(0);
+            $table->boolean('is_main')->default(false);
+            $table->foreignUuid('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('alt_text')->nullable();
+            $table->string('caption')->nullable();
             $table->timestamps();
+
+            $table->index(['room_id', 'is_main']);
         });
     }
 

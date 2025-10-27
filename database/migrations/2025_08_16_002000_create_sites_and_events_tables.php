@@ -27,16 +27,25 @@ return new class extends Migration {
             Schema::create('events', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('title');
+                $table->string('name');
+                $table->text('description')->nullable();
                 $table->string('city');
                 $table->string('category')->nullable(); // Musique, Culture, Festival, etc.
+                $table->string('image_path')->nullable();
                 $table->string('venue')->nullable();
+                $table->string('location')->nullable();
+                $table->unsignedInteger('ticket_price')->nullable();
                 $table->dateTime('starts_at');
                 $table->dateTime('ends_at')->nullable();
+                $table->dateTime('start_date')->nullable();
+                $table->dateTime('end_date')->nullable();
                 $table->unsignedInteger('price_min')->nullable();
                 $table->unsignedInteger('price_max')->nullable();
                 $table->decimal('latitude', 10, 7)->nullable();
                 $table->decimal('longitude', 10, 7)->nullable();
                 $table->string('photo_url')->nullable();
+                $table->foreignUuid('ticket_template_id')->nullable()->constrained('ticket_templates')->nullOnDelete();
+                $table->foreignUuid('organizer_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->timestamps();
             });
         }

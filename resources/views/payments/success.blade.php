@@ -86,9 +86,10 @@
              (isset($reservation->total_amount) ? $reservation->total_amount : 0);
     
     // Déterminer la route pour les réservations de l'utilisateur
-    $reservationsRoute = 'profile.reservations';
-    if (in_array($type, ['hotel', 'flight', 'bus', 'taxi', 'tourist_site'])) {
-        $reservationsRoute = 'profile.' . $type . '.index';
+    // Pour restaurant, route existante: food.restaurants.reservations.index
+    $reservationsRoute = null;
+    if ($type === 'restaurant') {
+        $reservationsRoute = 'food.restaurants.reservations.index';
     }
 @endphp
 
@@ -170,7 +171,12 @@
                     </div>
                     
                     <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-5">
-                        <a href="{{ route('home') }}" class="btn btn-primary btn-lg px-4">
+                        @if(!empty($receiptUrl))
+                            <a href="{{ $receiptUrl }}" target="_blank" rel="noopener" class="btn btn-success btn-lg px-4">
+                                <i class="fas fa-file-invoice me-2"></i> Voir / Télécharger le reçu Stripe
+                            </a>
+                        @endif
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary btn-lg px-4">
                             <i class="fas fa-home me-2"></i> Retour à l'accueil
                         </a>
                         <a href="{{ route($reservationsRoute) }}" class="btn btn-outline-secondary btn-lg px-4">

@@ -96,6 +96,14 @@ class RestaurantController extends Controller
         ]);
 
         return (new RestaurantReservationResource($reservation))
+            ->additional([
+                'links' => [
+                    'payment_form' => route('payment.form', ['type' => 'restaurant', 'id' => $reservation->id]),
+                    'checkout' => route('payment.checkout', ['type' => 'restaurant', 'id' => $reservation->id]),
+                    'success' => route('payment.success', ['type' => 'restaurant', 'id' => $reservation->id]),
+                    'cancel' => route('payment.cancel', ['type' => 'restaurant', 'id' => $reservation->id]),
+                ],
+            ])
             ->response()
             ->setStatusCode(201);
     }

@@ -41,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/restaurant-reservations', [RestaurantReservationController::class, 'index'])->name('api.restaurant_reservations.index');
     // GET /api/restaurant-reservations/{reservation} — Détails d'une réservation restaurant
     Route::get('/restaurant-reservations/{reservation}', [RestaurantReservationController::class, 'show'])->name('api.restaurant_reservations.show');
+    // GET /api/restaurant-reservations/{reservation}/receipt — Récupérer l'URL du reçu Stripe
+    Route::get('/restaurant-reservations/{reservation}/receipt', [RestaurantReservationController::class, 'receipt'])->name('api.restaurant_reservations.receipt');
 });
 
 // ==============================

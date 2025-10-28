@@ -35,7 +35,9 @@ class PaymentController extends Controller
         return view('payments.form', [
             'reservation' => $reservation,
             'type' => $type,
-            'amount' => $this->paymentService->calculateAmount($type, $reservation) / 100
+            // XOF est zero-decimal: afficher l'entier FCFA
+            'amount' => $this->paymentService->calculateAmount($type, $reservation),
+            'stripeKey' => config('services.stripe.key') ?? env('STRIPE_KEY'),
         ]);
     }
 
@@ -100,7 +102,10 @@ class PaymentController extends Controller
                 'user_id' => $userId
             ]);
 
-            $result = $this->paymentService->createPaymentIntent($type, $reservationId, $userId);
+            // Calculer le montant exact à partir de la réservation
+            $reservation = $this->getReservation($type, $reservationId);
+            $amount = $this->paymentService->calculateAmount($type, $reservation);
+            $result = $this->paymentService->createPaymentIntentWithAmount($amount, $type, $reservationId, $userId);
 
             if (!$result['success']) {
                 return response()->json([
@@ -146,10 +151,38 @@ class PaymentController extends Controller
                     'paid_at' => now()
                 ]);
             }
-            
-            // Rediriger vers la page de facture
-            return redirect()->route('invoice.show', ['type' => $type, 'id' => $id])
-                ->with('success', 'Paiement effectué avec succès ! Voici votre facture.');
+
+            // Tenter de récupérer une facture/receipt Stripe via la session de checkout
+            $receiptUrl = null;
+            try {
+                $sessionId = $request->query('session_id');
+                if (!empty($sessionId) && property_exists($this, 'paymentService')) {
+                    // Utiliser le client Stripe interne si disponible
+                    $reflect = new \ReflectionClass($this->paymentService);
+                    $prop = $reflect->getProperty('stripe');
+                    $prop->setAccessible(true);
+                    $stripe = $prop->getValue($this->paymentService);
+                    if ($stripe) {
+                        $session = $stripe->checkout->sessions->retrieve($sessionId, []);
+                        if (!empty($session->payment_intent)) {
+                            $pi = $stripe->paymentIntents->retrieve($session->payment_intent, ['expand' => ['charges']]);
+                            if (!empty($pi->charges) && !empty($pi->charges->data)) {
+                                $charge = $pi->charges->data[0];
+                                $receiptUrl = $charge->receipt_url ?? null;
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignorer silencieusement si indisponible; on affichera quand même la page de succès
+            }
+
+            // Afficher une page de succès avec lien de facture/receipt si disponible
+            return view('payments.success', [
+                'reservation' => $reservation,
+                'type' => $type,
+                'receiptUrl' => $receiptUrl,
+            ]);
         }
 
         // Rediriger vers le formulaire si le statut n'est ni pending ni paid
@@ -165,6 +198,23 @@ class PaymentController extends Controller
             'reservation' => $reservation,
             'type' => $type
         ]);
+    }
+
+    public function startCheckout(Request $request, $type, $id)
+    {
+        $reservation = $this->getReservation($type, $id);
+        
+        // Inclure l'identifiant de session pour récupérer la facture/receipt côté success
+        $successUrl = route('payment.success', ['type' => $type, 'id' => $id]) . '?session_id={CHECKOUT_SESSION_ID}';
+        $cancelUrl = route('payment.cancel', ['type' => $type, 'id' => $id]);
+        
+        $result = $this->paymentService->createCheckoutSession($type, $reservation, $successUrl, $cancelUrl);
+        
+        if (!$result['success']) {
+            return back()->with('error', $result['error'] ?? 'Impossible de démarrer Stripe Checkout.');
+        }
+        
+        return redirect()->away($result['url']);
     }
 
     public function handleWebhook(Request $request)

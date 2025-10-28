@@ -31,10 +31,14 @@ use App\Http\Controllers\SiteManagerBookingController;
 use App\Http\Controllers\HotelManagerController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\SiteManagerProfileController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Stripe webhook (public endpoint)
+Route::post('/webhooks/stripe', [PaymentController::class, 'handleWebhook'])->name('stripe.webhook');
 
 // Free AI Travel Assistant (public)
 Route::get('/assistant', [TravelAssistantController::class, 'index'])->name('assistant.index');
@@ -524,6 +528,15 @@ Route::middleware(['auth','active'])->group(function () {
             Route::patch('/dishes/{dish}', [\App\Http\Controllers\RestaurantOwnerController::class, 'dishesUpdate'])->name('dishes.update');
             Route::delete('/dishes/{dish}', [\App\Http\Controllers\RestaurantOwnerController::class, 'dishesDestroy'])->name('dishes.destroy');
         });
+    });
+
+    // Payments (authenticated)
+    Route::prefix('payment')->name('payment.')->group(function() {
+        Route::get('/{type}/{id}', [PaymentController::class, 'showPaymentForm'])->name('form');
+        Route::post('/intent', [PaymentController::class, 'createPaymentIntent'])->name('intent');
+        Route::post('/{type}/{id}/checkout', [PaymentController::class, 'startCheckout'])->name('checkout');
+        Route::get('/{type}/{id}/success', [PaymentController::class, 'success'])->name('success');
+        Route::get('/{type}/{id}/cancel', [PaymentController::class, 'cancel'])->name('cancel');
     });
 
     // [moved] Free AI Travel Assistant is public

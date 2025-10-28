@@ -97,8 +97,15 @@
         <!-- En-tête avec statut et actions rapides -->
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="hotel-title">
-                    {{ $hotel->name }}
+                <h1 class="hotel-title d-flex align-items-center gap-2">
+                    <span>{{ $hotel->name }}</span>
+                    @if(!is_null($hotel->stars))
+                        <span class="text-warning small">
+                            @for($i = 1; $i <= 5; $i++)
+                                <i class="bi {{ $i <= $hotel->stars ? 'bi-star-fill' : 'bi-star' }}"></i>
+                            @endfor
+                        </span>
+                    @endif
                 </h1>
                 <div class="hotel-subtitle">
                     <i class="bi bi-geo-alt-fill me-1"></i>{{ $hotel->city }}, {{ $hotel->country }}
@@ -141,7 +148,8 @@
                     @foreach($hotel->photos as $index => $photo)
                         <div class="{{ $index === 0 ? 'col-12' : 'col-6 col-md-3' }}">
                             <div class="ratio {{ $index === 0 ? 'ratio-16x9' : 'ratio-4x3' }} bg-light">
-                                <img src="{{ Storage::url($photo->path) }}" 
+                                @php($src = \Illuminate\Support\Str::startsWith($photo->path, ['http://','https://','/']) ? $photo->path : Storage::url($photo->path))
+                                <img src="{{ $src }}" 
                                      alt="Photo de l'hôtel {{ $hotel->name }}" 
                                      class="img-fluid h-100 w-100" 
                                      style="object-fit: cover;">
@@ -395,17 +403,15 @@
                                                     {{ number_format($booking->total_amount, 2, ',', ' ') }} €
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-4">
-                                                    @php
-                                                        $statusColors = [
-                                                            'pending' => 'bg-yellow-100 text-yellow-800',
-                                                            'confirmed' => 'bg-blue-100 text-blue-800',
-                                                            'cancelled' => 'bg-red-100 text-red-800',
-                                                            'checked_in' => 'bg-green-100 text-green-800',
-                                                            'checked_out' => 'bg-gray-100 text-gray-800',
-                                                            'completed' => 'bg-indigo-100 text-indigo-800',
-                                                        ][$booking->status] ?? 'bg-gray-100 text-gray-800';
-                                                    @endphp
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColors }}">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ match($booking->status) {
+                                                        'pending' => 'bg-yellow-100 text-yellow-800',
+                                                        'confirmed' => 'bg-blue-100 text-blue-800',
+                                                        'cancelled' => 'bg-red-100 text-red-800',
+                                                        'checked_in' => 'bg-green-100 text-green-800',
+                                                        'checked_out' => 'bg-gray-100 text-gray-800',
+                                                        'completed' => 'bg-indigo-100 text-indigo-800',
+                                                        default => 'bg-gray-100 text-gray-800',
+                                                    } }}">
                                                         {{ ucfirst($booking->status) }}
                                                     </span>
                                                 </td>

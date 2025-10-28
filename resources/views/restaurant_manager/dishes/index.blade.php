@@ -63,6 +63,9 @@
                                             @endif
                                         </td>
                                         <td>
+                                            <a href="{{ route('restaurant-manager.restaurants.dishes.show', [$restaurant, $dish]) }}" class="btn btn-sm btn-info">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
                                             <a href="{{ route('restaurant-manager.restaurants.dishes.edit', [$restaurant, $dish]) }}" class="btn btn-sm btn-primary">
                                                 <i class="fa fa-edit"></i>
                                             </a>

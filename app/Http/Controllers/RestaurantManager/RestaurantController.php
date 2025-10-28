@@ -25,7 +25,8 @@ class RestaurantController extends Controller
 
     public function create()
     {
-        return view('restaurant_manager.restaurants.create');
+        // Utiliser la vue unique du formulaire pour éviter la duplication
+        return view('restaurant_manager.restaurants.form');
     }
 
     public function store(Request $request)
@@ -82,7 +83,8 @@ class RestaurantController extends Controller
     public function edit(Restaurant $restaurant)
     {
         $this->authorize('update', $restaurant);
-        return view('restaurant_manager.restaurants.edit', compact('restaurant'));
+        // Utiliser la vue unique du formulaire pour éviter la duplication
+        return view('restaurant_manager.restaurants.form', compact('restaurant'));
     }
 
     public function update(Request $request, Restaurant $restaurant)
@@ -182,5 +184,11 @@ class RestaurantController extends Controller
         
         return redirect()->route('restaurant-manager.restaurants.index')
             ->with('success', 'Restaurant supprimé avec succès');
+    }
+
+    public function show(Restaurant $restaurant)
+    {
+        $this->authorize('view', $restaurant);
+        return view('restaurant_manager.restaurants.show', compact('restaurant'));
     }
 }

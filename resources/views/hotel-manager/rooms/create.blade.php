@@ -408,7 +408,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between pt-4 mt-4 border-top">
-                        <a href="{{ route('hotel-manager.rooms.index', $hotel) }}" 
+                        <a href="{{ route('hotels.rooms.index', $hotel) }}" 
                            class="btn btn-lg btn-outline-secondary px-4">
                             <i class="fas fa-arrow-left me-2"></i>Annuler
                         </a>

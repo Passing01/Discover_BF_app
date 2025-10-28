@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Event;
 use App\Models\Flight;
 use App\Models\Taxi;
@@ -39,11 +40,22 @@ class TouristDashboardController extends Controller
                 $todayItems[] = $itinerary['days'][0];
             }
         }
-        $upcomingEvents = Event::query()
-            ->whereDate('starts_at', '>=', $today)
-            ->orderBy('starts_at')
-            ->limit(6)
-            ->get();
+        // Pick the correct date column based on existing schema (backward compatible)
+        $eventDateColumn = null;
+        if (Schema::hasColumn('events', 'starts_at')) {
+            $eventDateColumn = 'starts_at';
+        } elseif (Schema::hasColumn('events', 'start_date')) {
+            $eventDateColumn = 'start_date';
+        }
+
+        $upcomingEvents = collect();
+        if ($eventDateColumn !== null) {
+            $upcomingEvents = Event::query()
+                ->whereDate($eventDateColumn, '>=', $today)
+                ->orderBy($eventDateColumn)
+                ->limit(6)
+                ->get();
+        }
 
         $flights = Flight::query()->orderBy('departure_time')->limit(3)->get();
         $taxis = Taxi::query()->limit(3)->get();

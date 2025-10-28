@@ -87,7 +87,7 @@
 
     <div class="mb-4" name="actions">
         <div class="d-flex flex-wrap align-items-center">
-            <a href="{{ route('hotel-manager.rooms.index', $hotel) }}" 
+            <a href="{{ route('hotel-manager.hotels.rooms.index', $hotel) }}" 
                class="btn btn-outline-secondary me-2 mb-2 d-inline-flex align-items-center">
                 <i class="bi bi-arrow-left me-2"></i>
                 Retour à la liste

@@ -69,13 +69,10 @@
                         
                         <div class="form-group">
                             <label for="image">Image du plat</label>
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-                                <label class="custom-file-label" for="image">Choisir une image</label>
-                                @error('image')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                            @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             <small class="form-text text-muted">Formats acceptés: JPG, PNG, JPEG. Taille max: 2MB</small>
                             <div class="mt-2" id="imagePreview"></div>
                         </div>
@@ -112,9 +109,8 @@
             };
             reader.readAsDataURL(file);
             
-            // Mettre à jour le label du fichier
-            const label = document.querySelector('.custom-file-label');
-            label.textContent = file.name;
+            // Affichage nom de fichier (optionnel)
+            // document.getElementById('image').closest('.form-group').querySelector('small.form-text').textContent = file.name;
         }
     });
     

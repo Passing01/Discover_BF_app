@@ -227,7 +227,20 @@
               </div>
               <div class="fw-semibold">{{ number_format($room->price_per_night, 0, ',', ' ') }} F CFA <span class="text-muted small">/ nuit</span></div>
             </div>
-            <p class="mt-2">{{ $room->description }}</p>
+            @if(is_array($room->description))
+              <ul class="mt-2 small text-muted mb-2">
+                @if(!empty($room->description['view']))
+                  <li>Vue: {{ $room->description['view'] }}</li>
+                @endif
+                @if(!empty($room->description['size']))
+                  <li>Superficie: {{ $room->description['size'] }} m²</li>
+                @endif
+                <li>Lit: {{ $room->description['bed_type'] ?? '—' }} × {{ $room->description['bed_count'] ?? '—' }}</li>
+                <li>Occupation max: {{ $room->description['max_occupancy'] ?? ($room->capacity ?? '—') }}</li>
+              </ul>
+            @elseif(!empty($room->description))
+              <p class="mt-2">{{ $room->description }}</p>
+            @endif
 
             @php $upcomingSmall = ($room->bookings ?? collect())->where('status','!=','cancelled')->sortBy('start_date')->take(5); @endphp
             @if(($upcomingSmall->count() ?? 0) > 0)

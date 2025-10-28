@@ -8,19 +8,19 @@
         <div class="d-flex justify-content-between align-items-center">
             <h1>Gestion des Chambres</h1>
             <div>
-                <a href="{{ route('hotel-manager.rooms.create', $hotel) }}" class="btn btn-primary">
+                <a href="{{ route('hotels.rooms.create', $hotel) }}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Ajouter une chambre
                 </a>
-                <a href="{{ route('hotel-manager.hotels.show', $hotel) }}" class="btn btn-outline-secondary ms-2">
+                <a href="{{ route('hotels.show', $hotel) }}" class="btn btn-outline-secondary ms-2">
                     <i class="fas fa-arrow-left me-2"></i>Retour à l'hôtel
                 </a>
             </div>
         </div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('hotel-manager.dashboard') }}">Tableau de bord</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('hotel-manager.hotels.index') }}">Mes Hôtels</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('hotel-manager.hotels.show', $hotel) }}">{{ $hotel->name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Tableau de bord</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hotels.index') }}">Mes Hôtels</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hotels.show', $hotel) }}">{{ $hotel->name }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Chambres</li>
             </ol>
         </nav>
@@ -67,7 +67,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">{{ $room->roomType->name }}</span>
+                                    <span class="badge bg-secondary">{{ $room->type }}</span>
                                 </td>
                                 <td>
                                     <span class="badge bg-info">
@@ -101,10 +101,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('hotel-manager.rooms.show', ['hotel' => $hotel, 'room' => $room]) }}" class="btn btn-sm btn-info text-white" title="Voir détails">
+                                        <a href="{{ route('hotels.rooms.show', ['hotel' => $hotel, 'room' => $room]) }}" class="btn btn-sm btn-info text-white" title="Voir détails">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('hotel-manager.rooms.edit', ['hotel' => $hotel, 'room' => $room]) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                        <a href="{{ route('hotels.rooms.edit', ['hotel' => $hotel, 'room' => $room]) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $room->id }}" title="Supprimer">
@@ -126,7 +126,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                    <form action="{{ route('hotel-manager.rooms.destroy', ['hotel' => $hotel, 'room' => $room]) }}" method="POST">
+                                                    <form action="{{ route('hotels.rooms.destroy', ['hotel' => $hotel, 'room' => $room]) }}" method="POST">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger">Supprimer</button>
@@ -152,7 +152,7 @@
                     </div>
                     <h4 class="mb-3">Aucune chambre enregistrée</h4>
                     <p class="text-muted mb-4">Commencez par ajouter votre première chambre pour gérer votre établissement.</p>
-                    <a href="{{ route('hotel-manager.rooms.create', $hotel) }}" class="btn btn-primary">
+                    <a href="{{ route('hotels.rooms.create', $hotel) }}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Ajouter une chambre
                     </a>
                 </div>

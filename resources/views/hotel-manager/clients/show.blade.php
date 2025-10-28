@@ -7,10 +7,10 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Détails du client</h1>
         <div>
-            <a href="{{ route('hotel-manager.clients.edit', [$hotel->id, $client->id]) }}" class="btn btn-warning">
+            <a href="{{ route('hotels.clients.edit', [$hotel->id, $client->id]) }}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Modifier
             </a>
-            <a href="{{ route('hotel-manager.clients.index', $hotel->id) }}" class="btn btn-secondary">
+            <a href="{{ route('hotels.clients.index', $hotel->id) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>
         </div>
@@ -94,7 +94,7 @@
                                     @foreach($bookings as $booking)
                                         <tr>
                                             <td>#{{ $booking->reference }}</td>
-                                            <td>{{ $booking->room->name }} ({{ $booking->room->roomType->name }})</td>
+                                            <td>{{ $booking->room->name }} ({{ $booking->room->type ?? 'Non spécifié' }})</td>
                                             <td>
                                                 {{ $booking->start_date->format('d/m/Y') }} - 
                                                 {{ $booking->end_date->format('d/m/Y') }}
@@ -115,7 +115,7 @@
                                             </td>
                                             <td>{{ number_format($booking->total_price, 2, ',', ' ') }} FCFA</td>
                                             <td>
-                                                <a href="{{ route('hotel-manager.bookings.show', [$hotel->id, $booking->id]) }}" 
+                                                <a href="{{ route('hotels.bookings.show', [$hotel, $booking]) }}" 
                                                    class="btn btn-sm btn-info" 
                                                    title="Voir les détails">
                                                     <i class="fas fa-eye"></i>

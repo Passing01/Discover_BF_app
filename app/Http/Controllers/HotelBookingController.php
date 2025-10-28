@@ -24,7 +24,7 @@ class HotelBookingController extends Controller
         $bookings = $hotel->bookings()
             ->with([
                 'room' => function($query) {
-                    $query->with(['photos', 'roomType']);
+                    $query->with(['photos']);
                 },
                 'user',
                 'payment'
@@ -147,7 +147,7 @@ class HotelBookingController extends Controller
         
         
         return redirect()
-            ->route('hotel-manager.hotels.bookings.show', [$hotel, $booking])
+            ->route('hotels.bookings.show', [$hotel, $booking])
             ->with('success', 'Réservation créée avec succès.');
     }
 

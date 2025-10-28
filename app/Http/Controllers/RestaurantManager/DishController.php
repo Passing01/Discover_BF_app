@@ -60,6 +60,13 @@ class DishController extends Controller
         return view('restaurant_manager.dishes.edit', compact('restaurant', 'dish'));
     }
 
+    public function show(Restaurant $restaurant, Dish $dish)
+    {
+        // $this->authorize('view', $restaurant);
+        $this->checkDishOwnership($restaurant, $dish);
+        return view('restaurant_manager.dishes.show', compact('restaurant','dish'));
+    }
+
     public function update(Request $request, Restaurant $restaurant, Dish $dish)
     {
         // $this->authorize('update', $restaurant);

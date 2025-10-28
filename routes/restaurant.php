@@ -17,7 +17,7 @@ Route::middleware(['auth', 'active'])
         Route::resource('restaurants', RestaurantController::class);
         
         // Gestion des plats
-        Route::resource('restaurants.dishes', DishController::class)->except(['show']);
+        Route::resource('restaurants.dishes', DishController::class);
         
         // Gestion des réservations
         Route::get('reservations', [ReservationController::class, 'index'])->name('reservations.index');

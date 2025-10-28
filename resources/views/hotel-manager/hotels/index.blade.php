@@ -46,7 +46,8 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         @if($hotel->photos->isNotEmpty())
-                                            <img src="{{ Storage::url($hotel->photos->first()->path) }}" alt="{{ $hotel->name }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
+                                            @php($thumb = $hotel->photos->first()->path)
+                                            <img src="{{ \Illuminate\Support\Str::startsWith($thumb, ['http://','https://','/']) ? $thumb : Storage::url($thumb) }}" alt="{{ $hotel->name }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
                                         @else
                                             <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                                                 <i class="fas fa-hotel text-muted"></i>

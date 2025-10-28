@@ -20,6 +20,16 @@
     <link rel="stylesheet" href="{{ asset('assets_restaurant/plugins/chartist-plugin-tooltips/css/chartist-plugin-tooltip.css') }}">
     <!-- Custom Stylesheet -->
     <link href="{{ asset('assets_restaurant/css/style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* Normalize Bootstrap Icons sizing across the hotel manager UI */
+        i.bi { font-size: 1rem !important; line-height: 1; }
+        .btn i.bi { font-size: 1rem !important; vertical-align: -0.125em; }
+        .btn-sm i.bi, .small i.bi { font-size: 0.875rem !important; }
+        .badge i.bi { font-size: 0.8rem !important; vertical-align: middle; }
+        a i.bi { font-size: 0.9rem !important; }
+    </style>
 
 </head>
 

@@ -21,20 +21,20 @@
   <x-ad-banner placement="restaurant_show_top" />
 
   <div class="panel-cream rounded-20 overflow-hidden">
-    @if($restaurant->cover_image)
-      <img src="{{ \Illuminate\Support\Str::startsWith($restaurant->cover_image, ['http://','https://','/']) ? $restaurant->cover_image : asset('storage/'.$restaurant->cover_image) }}" class="w-100" style="height:260px; object-fit:cover;" alt="{{ $restaurant->name }}">
+    @if($restaurant->cover_image_url)
+      <img src="{{ $restaurant->cover_image_url }}" class="w-100" style="height:260px; object-fit:cover;" alt="{{ $restaurant->name }}">
     @endif
     <div class="p-3">
       <p class="mb-2">{{ $restaurant->description }}</p>
       <div class="small text-muted mb-3"><i class="bi bi-star-fill text-warning me-1"></i>{{ number_format($restaurant->rating ?? 0, 1) }} • Prix moyen: {{ $restaurant->avg_price ? number_format($restaurant->avg_price, 0, ',', ' ') . ' CFA' : '—' }}</div>
 
-      @if(!empty($restaurant->gallery))
+      @if(!empty($restaurant->gallery_urls))
         <h5 class="mt-3">Galerie</h5>
         <div class="row g-2">
-          @foreach($restaurant->gallery as $img)
+          @foreach($restaurant->gallery_urls as $imgUrl)
             <div class="col-6 col-md-4 col-lg-3">
-              <a href="{{ $img }}" target="_blank" class="d-block">
-                <img src="{{ $img }}" class="img-fluid rounded-3 img-elevate" alt="Photo du cadre">
+              <a href="{{ $imgUrl }}" target="_blank" class="d-block">
+                <img src="{{ $imgUrl }}" class="img-fluid rounded-3 img-elevate" alt="Photo du cadre">
               </a>
             </div>
           @endforeach

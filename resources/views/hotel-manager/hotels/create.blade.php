@@ -587,10 +587,9 @@
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize Bootstrap tooltips
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
-                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
             // Gestion de la carte
@@ -631,11 +630,8 @@
                 const mainPhotoInput = document.getElementById('main_photo');
                 const galleryInput = document.getElementById('photos');
                 const imagePreview = document.getElementById('image-preview');
-                const dropZone = document.querySelector('.border-dashed');
-                
-                // Vérification des éléments
+
                 if (!mainPhotoInput || !galleryInput || !imagePreview) {
-                    console.error('Erreur: Éléments du formulaire introuvables');
                     return;
                 }
 
@@ -665,7 +661,7 @@
                         preview.className = 'mb-3';
                         preview.innerHTML = `
                             <div class="position-relative d-inline-block">
-                                <img src="${e.target.result}" class="img-thumbnail" style="width: 200px; height: 150px; object-fit: cover;">
+                                <img src="${e.target.result}" alt="${file.name}" class="img-thumbnail" style="width: 200px; height: 150px; object-fit: cover;">
                                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
                                         onclick="this.parentElement.parentElement.remove(); document.getElementById('main_photo').value = '';">
                                     ×
@@ -724,7 +720,6 @@
                     updateGalleryInput();
                 });
                 
-                // Fonction pour afficher les messages d'erreur
                 function showError(message) {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-danger alert-dismissible fade show';
@@ -733,14 +728,8 @@
                         ${message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
-                    
-                    // Insérer l'alerte avant la zone de dépôt
-                    dropZone.parentNode.insertBefore(alertDiv, dropZone);
-                    
-                    // Supprimer l'alerte après 5 secondes
-                    setTimeout(() => {
-                        alertDiv.remove();
-                    }, 5000);
+                    imagePreview.parentNode.insertBefore(alertDiv, imagePreview);
+                    setTimeout(() => alertDiv.remove(), 5000);
                 }
                 
                 // Mettre à jour l'input de la galerie avec les images restantes
@@ -768,23 +757,13 @@
                 };
                 
                 // Gestion du glisser-déposer pour la galerie
+                // Support glisser-déposer (facultatif si une zone existe)
+                const dropZone = document.getElementById('image-preview');
                 if (dropZone) {
-                    // Événements de survol
-                    dropZone.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        dropZone.classList.add('border-primary', 'bg-light');
-                    });
-                    
-                    dropZone.addEventListener('dragleave', () => {
-                        dropZone.classList.remove('border-primary', 'bg-light');
-                    });
-                    
-                    // Déposer les fichiers
+                    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); });
                     dropZone.addEventListener('drop', (e) => {
                         e.preventDefault();
-                        dropZone.classList.remove('border-primary', 'bg-light');
-                        
-                        if (e.dataTransfer.files.length) {
+                        if (e.dataTransfer.files && e.dataTransfer.files.length) {
                             galleryInput.files = e.dataTransfer.files;
                             galleryInput.dispatchEvent(new Event('change'));
                         }
@@ -845,8 +824,9 @@
                 // Vider l'aperçu existant
                 imagePreview.innerHTML = '';
                 
-                // Vérifier s'il y a des fichiers
-                if (!fileInput.files || fileInput.files.length === 0) {
+                // Récupérer l'input
+                const fileInput = document.getElementById('photos');
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
                     console.log('Aucun fichier à afficher');
                     return;
                 }
@@ -905,6 +885,7 @@
                     console.log('Suppression de l\'image à l\'index:', index);
                     
                     // Créer un nouveau tableau de fichiers sans l'élément à supprimer
+                    const fileInput = document.getElementById('photos');
                     const newFiles = Array.from(fileInput.files);
                     newFiles.splice(index, 1);
                     

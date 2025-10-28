@@ -41,8 +41,8 @@
                 </div>
 
                 <!-- Right auth panel -->
-                <div class="col-12 col-lg-6 d-flex align-items-center justify-content-center py-5 py-lg-0">
-                    <div class="auth-card bg-white rounded-4 shadow p-4 p-md-5">
+                <div class="col-12 col-lg-6 d-flex align-items-center justify-content-center py-4 py-lg-0">
+                    <div class="auth-card bg-white rounded-4 shadow p-3 p-md-4">
                         {{ $slot }}
                     </div>
                 </div>

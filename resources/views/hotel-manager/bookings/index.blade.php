@@ -96,7 +96,7 @@
                                         @endif
                                         <div>
                                             <div class="fw-medium">{{ $booking->room->name }}</div>
-                                            <div class="small text-muted">{{ $booking->room->roomType->name ?? 'Non spécifié' }}</div>
+                                            <div class="small text-muted">{{ $booking->room->type ?? 'Non spécifié' }}</div>
                                     </div>
                                 </td>
                                 <td>
@@ -165,7 +165,7 @@
                                     @endif
                                     
                                     @if($booking->status === 'confirmed' && $booking->start_date->isToday())
-                                        <form action="{{ route('hotel-manager.hotels.bookings.update-status', [$hotel, $booking]) }}" method="POST" class="inline">
+                                        <form action="{{ route('hotels.bookings.update-status', [$hotel, $booking]) }}" method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="checked_in">
@@ -178,7 +178,7 @@
                                     @endif
                                     
                                     @if($booking->status === 'checked_in')
-                                        <form action="{{ route('hotel-manager.hotels.bookings.update-status', [$hotel, $booking]) }}" method="POST" class="inline">
+                                        <form action="{{ route('hotels.bookings.update-status', [$hotel, $booking]) }}" method="POST" class="inline">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="checked_out">

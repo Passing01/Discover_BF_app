@@ -45,8 +45,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        @if($restaurant->cover_image)
-                                            <img src="{{ Storage::url($restaurant->cover_image) }}" alt="{{ $restaurant->name }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
+                                        @if($restaurant->cover_image_url)
+                                            <img src="{{ $restaurant->cover_image_url }}" alt="{{ $restaurant->name }}" class="rounded me-3" width="50" height="50" style="object-fit: cover;">
                                         @else
                                             <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                                                 <i class="fas fa-utensils text-muted"></i>
@@ -88,6 +88,9 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
+                                        <a href="{{ route('restaurant-manager.restaurants.show', $restaurant) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="{{ route('restaurant-manager.restaurants.dishes.index', $restaurant) }}" class="btn btn-sm btn-info text-white" title="Gérer les plats">
                                             <i class="fas fa-utensils"></i>
                                         </a>

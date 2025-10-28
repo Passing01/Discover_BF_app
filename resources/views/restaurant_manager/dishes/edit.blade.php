@@ -83,13 +83,10 @@
                             </div>
                             
                             <label for="image">Nouvelle image</label>
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-                                <label class="custom-file-label" for="image">Choisir une nouvelle image</label>
-                                @error('image')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                            @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             <small class="form-text text-muted">Formats acceptés: JPG, PNG, JPEG. Taille max: 2MB</small>
                             <div class="mt-2" id="imagePreview"></div>
                         </div>
@@ -127,12 +124,9 @@
             };
             reader.readAsDataURL(file);
             
-            // Mettre à jour le label du fichier
-            const label = document.querySelector('.custom-file-label');
-            label.textContent = file.name;
-            
             // Désactiver la case à cocher de suppression d'image si une nouvelle image est sélectionnée
-            document.getElementById('remove_image').disabled = true;
+            var rm = document.getElementById('remove_image');
+            if (rm) rm.disabled = true;
         } else {
             // Réactiver la case à cocher de suppression d'image si aucune image n'est sélectionnée
             const removeImageCheckbox = document.getElementById('remove_image');

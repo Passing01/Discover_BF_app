@@ -4,7 +4,7 @@
     $route = $isEdit ? route('restaurant-manager.restaurants.update', $restaurant) : route('restaurant-manager.restaurants.store');
     $method = $isEdit ? 'PUT' : 'POST';
     $buttonText = $isEdit ? 'Mettre à jour' : 'Créer le restaurant';
-    $coverImage = $isEdit && $restaurant->cover_image ? Storage::url($restaurant->cover_image) : null;
+    $coverImage = $isEdit && $restaurant->cover_image ? ($restaurant->cover_image_url ?? Storage::url($restaurant->cover_image)) : null;
 @endphp
 
 @extends('layouts.restau')
@@ -146,14 +146,14 @@
                             <div class="mb-4">
                                 <label class="form-label">Galerie de photos</label>
                                 <div class="gallery-preview mb-3">
-                                    @if($isEdit && !empty($restaurant->gallery))
+                                    @if($isEdit && !empty($restaurant->gallery_urls))
                                         <div class="row g-2">
-                                            @foreach($restaurant->gallery as $index => $image)
+                                            @foreach($restaurant->gallery_urls as $index => $imageUrl)
                                                 <div class="col-4 col-md-3">
                                                     <div class="position-relative">
-                                                        <img src="{{ Storage::url($image) }}" class="img-fluid rounded border" alt="Galerie {{ $index + 1 }}">
+                                                        <img src="{{ $imageUrl }}" class="img-fluid rounded border" alt="Galerie {{ $index + 1 }}">
                                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
-                                                                onclick="removeGalleryImage(this, '{{ $index }}')">
+                                                                onclick="removeGalleryImage(this, '{{ is_array($restaurant->gallery[$index] ?? null) ? ($restaurant->gallery[$index]['path'] ?? ($restaurant->gallery[$index][0] ?? '')) : ($restaurant->gallery[$index] ?? '') }}')">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </div>
@@ -173,7 +173,7 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="text-muted d-block mt-1">Sélectionnez une ou plusieurs images. Taille maximale : 2MB par image. Formats : JPG, PNG, JPEG</small>
-                                <input type="hidden" name="removed_gallery_images" id="removed_gallery_images" value="">
+                                <div id="removed_gallery_images_container"></div>
                             </div>
                             
                             <div class="mb-4">
@@ -298,19 +298,74 @@
             reader.readAsDataURL(input.files[0]);
         }
     }
-    
-    // Initialiser le sélecteur de date et d'heure
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialiser les champs de date/heure si nécessaire
-        if (document.getElementById('reservation_at')) {
-            flatpickr('#reservation_at', {
-                enableTime: true,
-                dateFormat: 'Y-m-d H:i',
-                minDate: 'today',
-                time_24hr: true,
-                locale: 'fr'
-            });
+
+    function addVideoField() {
+        const container = document.getElementById('video-container');
+        const group = document.createElement('div');
+        group.className = 'input-group mb-2 video-url-group';
+        group.innerHTML = `
+            <input type="url" class="form-control" name="video_urls[]" placeholder="https://www.youtube.com/watch?v=...">
+            <button type="button" class="btn btn-outline-danger" onclick="removeVideoField(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(group);
+    }
+
+    function removeVideoField(button) {
+        const group = button.closest('.video-url-group');
+        if (group) {
+            group.classList.add('removing');
+            setTimeout(() => group.remove(), 200);
         }
-    });
+    }
+
+    function previewGallery(input) {
+        const previewContainer = input.closest('.mb-4').querySelector('.gallery-preview');
+        if (!previewContainer) { return; }
+        previewContainer.innerHTML = '';
+        const files = Array.from(input.files || []);
+        if (files.length === 0) {
+            previewContainer.innerHTML = `
+                <div class="text-center py-4 border rounded bg-light">
+                    <i class="fas fa-images fa-2x text-muted mb-2"></i>
+                    <p class="mb-0 text-muted">Aucune image sélectionnée</p>
+                </div>`;
+            return;
+        }
+        const row = document.createElement('div');
+        row.className = 'row g-2';
+        files.forEach((file) => {
+            const col = document.createElement('div');
+            col.className = 'col-4 col-md-3';
+            const wrap = document.createElement('div');
+            wrap.className = 'position-relative';
+            const img = document.createElement('img');
+            img.className = 'img-fluid rounded border';
+            img.alt = 'Preview';
+            const reader = new FileReader();
+            reader.onload = (e) => { img.src = e.target.result; };
+            reader.readAsDataURL(file);
+            wrap.appendChild(img);
+            col.appendChild(wrap);
+            row.appendChild(col);
+        });
+        previewContainer.appendChild(row);
+    }
+
+    function removeGalleryImage(button, imagePath) {
+        // Visually remove the image card
+        const col = button.closest('.col-4, .col-md-3');
+        if (col) { col.remove(); }
+        // Append a hidden input for removal
+        const container = document.getElementById('removed_gallery_images_container');
+        if (container) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'removed_gallery_images[]';
+            input.value = imagePath;
+            container.appendChild(input);
+        }
+    }
 </script>
 @endpush

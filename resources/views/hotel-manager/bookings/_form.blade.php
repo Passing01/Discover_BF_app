@@ -1,7 +1,7 @@
 @php
     $isEdit = isset($booking) && $booking->exists;
     $route = $isEdit 
-        ? route('hotel-manager.hotels.bookings.update', [$hotel, $booking])
+        ? route('hotels.bookings.update', [$hotel, $booking])
         : route('hotels.bookings.store', $hotel);
     $method = $isEdit ? 'PUT' : 'POST';
     
@@ -108,11 +108,11 @@
                         @foreach($rooms as $room)
                             <option value="{{ $room->id }}" 
                                     data-price="{{ $room->price_per_night }}"
-                                    data-room-type-id="{{ $room->room_type_id }}"
+                                    data-room-type-name="{{ $room->type }}"
                                     {{ $defaults['room_id'] == $room->id ? 'selected' : '' }}
                                     style="display: none;">
                                 {{ $room->name }} - {{ number_format($room->price_per_night, 0, ',', ' ') }} FCFA/nuit
-                                ({{ $room->roomType ? $room->roomType->name : 'Sans type' }})
+                                ({{ $room->type ?? 'Sans type' }})
                             </option>
                         @endforeach
                     </select>
@@ -232,7 +232,7 @@
         </div>
         
         <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-            <a href="{{ $isEdit ? route('hotel-manager.hotels.bookings.show', [$hotel, $booking]) : route('hotel-manager.hotels.bookings.index', $hotel) }}" 
+            <a href="{{ $isEdit ? route('hotels.bookings.show', [$hotel, $booking]) : route('hotels.bookings.index', $hotel) }}" 
                class="btn btn-outline-secondary">
                 Annuler
             </a>
@@ -255,7 +255,7 @@
 </form>
 
 @if(isset($booking) && $booking->exists)
-    <form id="delete-form" action="{{ route('hotel-manager.hotels.bookings.destroy', [$hotel, $booking]) }}" method="POST" class="hidden">
+    <form id="delete-form" action="{{ route('hotels.bookings.destroy', [$hotel, $booking]) }}" method="POST" class="hidden">
         @csrf
         @method('DELETE')
     </form>
@@ -412,6 +412,9 @@
         // Fonction pour filtrer les chambres par type
         function filterRoomsByType() {
             const selectedTypeId = roomTypeSelect ? roomTypeSelect.value : '';
+            const selectedTypeName = roomTypeSelect && roomTypeSelect.options[roomTypeSelect.selectedIndex] 
+                ? roomTypeSelect.options[roomTypeSelect.selectedIndex].text.trim().toLowerCase() 
+                : '';
             const roomOptions = roomSelect.getElementsByTagName('option');
             let hasAvailableRooms = false;
             
@@ -424,9 +427,8 @@
             if (selectedTypeId) {
                 for (let i = 1; i < roomOptions.length; i++) {
                     const roomOption = roomOptions[i];
-                    const roomTypeId = roomOption.getAttribute('data-room-type-id');
-                    
-                    if (roomTypeId === selectedTypeId) {
+                    const roomTypeName = (roomOption.getAttribute('data-room-type-name') || '').toLowerCase();
+                    if (roomTypeName === selectedTypeName) {
                         roomOption.style.display = '';
                         hasAvailableRooms = true;
                     }

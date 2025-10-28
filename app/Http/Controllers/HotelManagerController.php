@@ -860,7 +860,7 @@ class HotelManagerController extends Controller
             
             DB::commit();
             
-            return redirect()->route('hotel-manager.hotels.rooms', ['hotel' => $hotel->id])
+            return redirect()->route('hotels.rooms.index', ['hotel' => $hotel->id])
                 ->with('success', 'La chambre a été créée avec succès.');
 
         } catch (\Exception $e) {

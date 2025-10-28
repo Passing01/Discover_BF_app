@@ -43,4 +43,60 @@ class Restaurant extends Model
     {
         return $this->hasMany(RestaurantReservation::class);
     }
+
+    /**
+     * Resolve a media path or URL to a displayable URL.
+     */
+    protected function resolveMediaUrl(null|string|array $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+        // If it's an array, try common keys or first element
+        if (is_array($value)) {
+            $value = $value['path'] ?? $value['url'] ?? ($value[0] ?? null);
+            if (empty($value)) {
+                return null;
+            }
+        }
+        // If already absolute URL
+        if (is_string($value) && preg_match('/^https?:\/\//i', $value)) {
+            return $value;
+        }
+        // If path is in public assets (with or without leading slash)
+        if (is_string($value)) {
+            $trimmed = ltrim($value, '/');
+            // Common public asset prefixes used in this app
+            $isPublicAsset = str_starts_with($trimmed, 'assets/')
+                || str_starts_with($trimmed, 'assets_restaurant/')
+                || str_starts_with($trimmed, 'assets_admin/')
+                || file_exists(public_path($trimmed));
+            if ($isPublicAsset) {
+                return asset($trimmed);
+            }
+        }
+        // Default to storage public disk
+        return is_string($value) ? \Storage::url($value) : null;
+    }
+
+    public function getCoverImageUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->cover_image);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getGalleryUrlsAttribute(): array
+    {
+        $images = is_array($this->gallery) ? $this->gallery : [];
+        $urls = [];
+        foreach ($images as $image) {
+            $url = $this->resolveMediaUrl($image);
+            if (is_string($url) && $url !== '') {
+                $urls[] = $url;
+            }
+        }
+        return $urls;
+    }
 }

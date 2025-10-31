@@ -1,7 +1,11 @@
 @extends('layouts.tourist')
 
+@push('styles')
+  <link rel="stylesheet" href="{{ asset('assets/css/bookings_index.css') }}">
+@endpush
+
 @section('content')
-<div class="container py-4">
+<div class="container py-4 bookings-page">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <div>
       <div class="text-muted small">Bookings</div>

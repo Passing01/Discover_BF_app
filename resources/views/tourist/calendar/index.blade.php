@@ -37,6 +37,7 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+<link href="{{ asset('css/tourist-calendar.css') }}" rel="stylesheet" />
 @endpush
 
 @push('scripts')

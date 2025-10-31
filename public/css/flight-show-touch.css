@@ -1,0 +1,11 @@
+/* Effet de survol tactile sur les cadres principaux de la page show (panel-cream et card) */
+.panel-cream,
+.card {
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+.panel-cream:hover, .panel-cream:focus-within, .panel-cream:active,
+.card:hover, .card:focus-within, .card:active {
+  box-shadow: 0 8px 32px rgba(0,158,226,0.18), 0 2px 8px rgba(10,42,92,0.10);
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--main-blue-light);
+}

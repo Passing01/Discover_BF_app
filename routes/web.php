@@ -1,30 +1,29 @@
 <?php
-
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ItineraryController;
-use App\Http\Controllers\GuideDashboardController;
+use App\Http\Controllers\SiteManagerDashboardController;
 use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\RoleOnboardingController;
-use App\Http\Controllers\RoleApplicationController;
-use App\Http\Controllers\TouristHotelController;
-use App\Http\Controllers\TouristEventController;
-use App\Http\Controllers\EventCreatorController;
-use App\Http\Controllers\HotelAgencyController;
-use App\Http\Controllers\TicketTemplateController;
-use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventBookingController;
+use App\Http\Controllers\EventCreatorController;
+use App\Http\Controllers\GuideDashboardController;
+use App\Http\Controllers\HotelAgencyController;
+use App\Http\Controllers\ItineraryController;
+use App\Http\Controllers\OrganizerProfileController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleApplicationController;
+use App\Http\Controllers\RoleOnboardingController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketTemplateController;
 use App\Http\Controllers\TouristBookingController;
 use App\Http\Controllers\AgencyBookingController;
 use App\Http\Controllers\TaxiController;
 use App\Http\Controllers\BusController;
-use App\Http\Controllers\SiteManagerDashboardController;
 use App\Http\Controllers\BusBookingController;
 use App\Http\Controllers\FlightController;
-use App\Http\Controllers\TravelAssistantController;
 use App\Http\Controllers\TouristCalendarController;
+use App\Http\Controllers\TouristEventController;
+use App\Http\Controllers\TouristHotelController;
 use App\Http\Controllers\TouristSiteController;
-use App\Http\Controllers\OrganizerProfileController;
+use App\Http\Controllers\TravelAssistantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SiteManagerSiteController;
 use App\Http\Controllers\SiteManagerBookingController;
@@ -47,7 +46,7 @@ Route::post('/assistant/ai', [TravelAssistantController::class, 'aiSuggest'])->n
 Route::get('/assistant/ai/stream', [TravelAssistantController::class, 'aiStream'])->name('assistant.ai.stream');
 Route::get('/assistant/export', [TravelAssistantController::class, 'export'])->name('assistant.export');
 Route::get('/assistant/preview', [TravelAssistantController::class, 'preview'])->name('assistant.preview');
-Route::match(['get','post'],'/assistant/add', [TravelAssistantController::class, 'addItem'])->name('assistant.add');
+Route::match(['get', 'post'], '/assistant/add', [TravelAssistantController::class, 'addItem'])->name('assistant.add');
 Route::get('/assistant/recent', [TravelAssistantController::class, 'recent'])->name('assistant.recent');
 Route::get('/assistant/options', [TravelAssistantController::class, 'options'])->name('assistant.options');
 
@@ -72,8 +71,8 @@ Route::get('/sites/{site}', [TouristSiteController::class, 'show'])->name('sites
 Route::post('/sites/{site}/contact-guide', [TouristSiteController::class, 'contactGuide'])->name('sites.contact');
 
 // Public Event Booking
-Route::get('/events/{event}/book', [EventBookingController::class, 'create'])->middleware(['auth','active','tourist'])->name('bookings.create');
-Route::post('/events/{event}/book', [EventBookingController::class, 'store'])->middleware(['auth','active','tourist'])->name('bookings.store');
+Route::get('/events/{event}/book', [EventBookingController::class, 'create'])->middleware(['auth', 'active', 'tourist'])->name('bookings.create');
+Route::post('/events/{event}/book', [EventBookingController::class, 'store'])->middleware(['auth', 'active', 'tourist'])->name('bookings.store');
 Route::get('/bookings/{booking}', [EventBookingController::class, 'show'])->name('bookings.show');
 
 Route::get('/dashboard', function () {
@@ -81,29 +80,6 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified', 'active'])->name('dashboard');
 
 Route::middleware(['auth','active'])->group(function () {
-    // Routes pour les gestionnaires de sites
-    Route::prefix('site-manager')->name('site-manager.')->middleware(['site_manager'])->group(function () {
-        // Tableau de bord
-        Route::get('/dashboard', [SiteManagerDashboardController::class, 'index'])->name('dashboard');
-        
-        // Gestion des sites
-        Route::resource('sites', 'App\Http\Controllers\SiteManagerSiteController');
-        Route::post('sites/{site}/toggle-status', [SiteManagerSiteController::class, 'toggleStatus'])->name('sites.toggle-status');
-        
-        // Gestion des réservations
-        Route::get('bookings', [SiteManagerBookingController::class, 'index'])->name('bookings.index');
-        Route::get('bookings/{booking}', [SiteManagerBookingController::class, 'show'])->name('bookings.show');
-        Route::put('bookings/{booking}/status', [SiteManagerBookingController::class, 'updateStatus'])->name('bookings.update-status');
-        Route::get('calendar', [SiteManagerBookingController::class, 'calendar'])->name('calendar');
-        Route::get('calendar/events', [SiteManagerBookingController::class, 'calendarEvents'])->name('calendar.events');
-        Route::get('bookings/export', [SiteManagerBookingController::class, 'export'])->name('bookings.export');
-        
-        // Profil
-        Route::get('/profile', [SiteManagerProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('/profile', [SiteManagerProfileController::class, 'update'])->name('profile.update');
-        Route::put('/profile/password', [SiteManagerProfileController::class, 'updatePassword'])->name('profile.password.update');
-    });
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -119,7 +95,9 @@ Route::middleware(['auth','active'])->group(function () {
 
     // Tourist Dashboard
     Route::get('/tourist/dashboard', [\App\Http\Controllers\TouristDashboardController::class, 'index'])->name('tourist.dashboard');
-    Route::get('/tourist/community', [\App\Http\Controllers\Community\CommunityPostController::class, 'index'])->name('tourist.community');
+    Route::view('/tourist/community', 'tourist.community')->name('tourist.community');
+    Route::view('/tourist/local-tips', 'tourist.local-tips')->name('tourist.local-tips');
+    Route::view('/tourist/recommendations', 'tourist.recommendations')->name('tourist.recommendations');
 
     // Tourist Calendar
     Route::get('/tourist/calendar', [TouristCalendarController::class, 'index'])->name('tourist.calendar');
@@ -134,7 +112,7 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/tourist/events', [TouristEventController::class, 'index'])->name('tourist.events.index');
     Route::get('/tourist/events/{event}', [TouristEventController::class, 'show'])->name('tourist.events.show');
     // Back-compat: redirect old tourist booking endpoint to new public booking flow
-    Route::match(['get','post'],'/tourist/events/{event}/book', function(\App\Models\Event $event) {
+    Route::match(['get', 'post'], '/tourist/events/{event}/book', function (\App\Models\Event $event) {
         return redirect()->route('bookings.create', $event);
     })->name('tourist.events.book');
 
@@ -252,25 +230,25 @@ Route::middleware(['auth','active'])->group(function () {
         Route::get('/moderation', [\App\Http\Controllers\AdminModerationController::class, 'index'])->name('moderation');
         Route::post('/moderation/restaurants/{restaurant}/toggle', [\App\Http\Controllers\AdminModerationController::class, 'toggleRestaurant'])->name('moderation.restaurant.toggle');
         Route::post('/moderation/dishes/{dish}/toggle', [\App\Http\Controllers\AdminModerationController::class, 'toggleDish'])->name('moderation.dish.toggle');
-        
+
         // Gestion des publications de la communauté
         Route::prefix('community/posts')->name('community.posts.')->group(function () {
             // Liste des publications
             Route::get('/', [\App\Http\Controllers\Community\CommunityPostController::class, 'adminIndex'])->name('index');
-            
+
             // Publications désactivées
             Route::get('/trashed', [\App\Http\controllers\Community\CommunityPostController::class, 'trashed'])->name('trashed');
-            
+
             // Désactiver une publication
             Route::post('/{post}/deactivate', [\App\Http\Controllers\Community\CommunityPostController::class, 'deactivate'])
                 ->name('deactivate')
                 ->where('post', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
-                
+
             // Réactiver une publication
             Route::post('/{post}/activate', [\App\Http\Controllers\Community\CommunityPostController::class, 'activate'])
                 ->name('activate')
                 ->where('post', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
-                
+
             // Supprimer définitivement une publication
             Route::delete('/{post}/force-delete', [\App\Http\Controllers\Community\CommunityPostController::class, 'forceDelete'])
                 ->name('force-delete')
@@ -484,7 +462,7 @@ Route::middleware(['auth','active'])->group(function () {
     Route::get('/transport/bus/bookings/{booking}', [BusBookingController::class, 'show'])->name('transport.bus.booking.show');
 
     // Air Travel: Flights to Burkina Faso
-    Route::prefix('air')->name('air.')->group(function() {
+    Route::prefix('air')->name('air.')->group(function () {
         Route::get('/flights', [FlightController::class, 'index'])->name('flights.index');
         Route::get('/flights/{flight}', [FlightController::class, 'show'])->name('flights.show');
         Route::get('/flights/{flight}/book', [FlightController::class, 'book'])->middleware('tourist')->name('flights.book');
@@ -501,7 +479,7 @@ Route::middleware(['auth','active'])->group(function () {
     });
 
     // Food: Restaurants
-    Route::prefix('food')->name('food.')->group(function() {
+    Route::prefix('food')->name('food.')->group(function () {
         Route::get('/restaurants', [\App\Http\Controllers\RestaurantController::class, 'index'])->name('restaurants.index');
         Route::get('/restaurants/{restaurant}', [\App\Http\Controllers\RestaurantController::class, 'show'])->name('restaurants.show');
         Route::get('/restaurants/{restaurant}/reserve', [\App\Http\Controllers\RestaurantController::class, 'createReservation'])->name('restaurants.reserve');
@@ -511,12 +489,12 @@ Route::middleware(['auth','active'])->group(function () {
 
         // Dishes (details & delivery orders)
         Route::get('/dishes/{dish}', [\App\Http\Controllers\DishController::class, 'show'])->name('dishes.show');
-        Route::get('/dishes/{dish}/order', [\App\Http\Controllers\DishController::class, 'orderCreate'])->middleware(['auth','active','tourist'])->name('dishes.orders.create');
-        Route::post('/dishes/{dish}/order', [\App\Http\Controllers\DishController::class, 'orderStore'])->middleware(['auth','active','tourist'])->name('dishes.orders.store');
-        Route::get('/orders/{order}', [\App\Http\Controllers\DishController::class, 'orderShow'])->middleware(['auth','active'])->name('dishes.orders.show');
+        Route::get('/dishes/{dish}/order', [\App\Http\Controllers\DishController::class, 'orderCreate'])->middleware(['auth', 'active', 'tourist'])->name('dishes.orders.create');
+        Route::post('/dishes/{dish}/order', [\App\Http\Controllers\DishController::class, 'orderStore'])->middleware(['auth', 'active', 'tourist'])->name('dishes.orders.store');
+        Route::get('/orders/{order}', [\App\Http\Controllers\DishController::class, 'orderShow'])->middleware(['auth', 'active'])->name('dishes.orders.show');
 
         // Owner management (Restaurant owner)
-        Route::prefix('owner')->name('owner.')->group(function() {
+        Route::prefix('owner')->name('owner.')->group(function () {
             // Edit restaurant profile & media
             Route::get('/restaurant', [\App\Http\Controllers\RestaurantOwnerController::class, 'editRestaurant'])->name('restaurant.edit');
             Route::post('/restaurant', [\App\Http\Controllers\RestaurantOwnerController::class, 'updateRestaurant'])->name('restaurant.update');
@@ -586,13 +564,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('community.posts.update');
     Route::delete('community/posts/{post}', 'App\Http\Controllers\Community\CommunityPostController@destroy')
         ->name('community.posts.destroy');
-    
+
     // Routes pour les commentaires
     Route::post('community/posts/{post}/comments', 'App\Http\Controllers\Community\CommentController@store')
         ->name('community.comments.store');
     Route::delete('community/comments/{comment}', 'App\Http\Controllers\Community\CommentController@destroy')
         ->name('community.comments.destroy');
-    
+
     // Routes pour les likes
     Route::post('community/posts/{post}/like', 'App\Http\Controllers\Community\LikeController@toggleLike')
         ->name('community.posts.like');

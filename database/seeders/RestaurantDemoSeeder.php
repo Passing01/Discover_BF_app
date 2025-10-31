@@ -42,7 +42,8 @@ class RestaurantDemoSeeder extends Seeder
                 'latitude' => 11.1783, 'longitude' => -4.2979, 'map_url' => 'https://maps.google.com/?q=11.1783,-4.2979',
                 'avg_price' => 7000, 'rating' => 4.3,
                 'gallery' => [
-                    'assets/img/working-3.jpg',
+                    'assets/img/Restaurant.jpg',
+                
                 ],
                 'video_urls' => [
                     'https://www.youtube.com/shorts/O8_jSnTzFYs',

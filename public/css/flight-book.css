@@ -1,0 +1,81 @@
+.flight-book-summary-inner {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0,158,226,0.07);
+  border: 2px solid var(--main-blue-bg);
+  padding: 1.5rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+/* Style moderne, responsive et aéré pour la page de réservation d'un vol */
+
+:root {
+  --main-blue-dark: #0a2a5c;
+  --main-blue-light: #009ee2;
+  --main-blue-bg: #eaf6fb;
+  --main-orange: #ff9800;
+}
+
+.flight-book-container {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.flight-book-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--main-blue-dark);
+  margin-bottom: 2rem;
+}
+
+.flight-book-card, .flight-book-summary, .flight-book-passenger {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0,158,226,0.07);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  border: 2px solid transparent;
+}
+.flight-book-card:hover, .flight-book-card:focus-within, .flight-book-card:active,
+.flight-book-summary:hover, .flight-book-summary:focus-within, .flight-book-summary:active,
+.flight-book-passenger:hover, .flight-book-passenger:focus-within, .flight-book-passenger:active {
+  box-shadow: 0 8px 32px rgba(0,158,226,0.18), 0 2px 8px rgba(10,42,92,0.10);
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--main-blue-light);
+}
+
+.flight-book-btn-main {
+  background: var(--main-blue-light);
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  padding: 0.6em 2em;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,158,226,0.10);
+}
+.flight-book-btn-main:hover {
+  background: var(--main-blue-dark);
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(0,158,226,0.18);
+}
+
+.flight-book-badge {
+  background: var(--main-blue-bg);
+  color: var(--main-blue-dark);
+  border-radius: 2rem;
+  font-size: 0.95rem;
+  padding: 0.35em 1em;
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+  display: inline-block;
+}
+
+@media (max-width: 991.98px) {
+  .flight-book-container .row > [class^="col-"] {
+    margin-bottom: 2rem;
+  }
+}
+@media (max-width: 575.98px) {
+  .flight-book-title {
+    font-size: 1.2rem;
+  }
+}

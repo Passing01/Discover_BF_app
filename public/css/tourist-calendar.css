@@ -1,0 +1,213 @@
+:root{
+	--primary:#2563eb;
+	--muted:#6b7280;
+	--card:#fff;
+	--cream:#f8fafc;
+	--accent:#06b6d4;
+	--radius:12px;
+}
+
+/* Calendar container */
+#calendar { 
+	min-height: 420px;
+	padding: 8px;
+}
+
+/* Panel overrides to make the calendar pop */
+.panel-cream { 
+	background: linear-gradient(180deg, var(--cream), #fff);
+	border: 1px solid rgba(15,23,42,0.06);
+	box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+}
+
+/* FullCalendar toolbar (default) */
+.fc .fc-toolbar-title {
+	font-size: 1.125rem;
+	font-weight: 700;
+	color: #0f172a;
+}
+.fc .fc-toolbar .fc-button {
+	background: #fff;
+	border: 1px solid #e6e9ee;
+	color: #0f172a;
+	padding: 0.35rem 0.6rem;
+	border-radius: 8px;
+	box-shadow: none;
+}
+.fc .fc-toolbar .fc-button-primary {
+	background: var(--primary);
+	border-color: var(--primary);
+	color: #fff;
+}
+
+/* Day cell number */
+.fc .fc-daygrid-day-number { 
+	font-weight: 600; 
+	color: #0f172a;
+}
+
+/* Events */
+.fc .fc-daygrid-event {
+	background: var(--accent) !important;
+	color: #fff !important;
+	border: none !important;
+	border-radius: 8px !important;
+	padding: 4px 6px !important;
+	font-size: 0.85rem !important;
+	box-shadow: 0 2px 6px rgba(3,7,18,0.12);
+}
+
+/* Hover state */
+.fc .fc-daygrid-event:hover {
+	transform: translateY(-2px);
+	transition: transform .12s ease;
+}
+
+/* Small screens: reduce paddings */
+@media (max-width: 767px){
+	#calendar { padding: 4px; }
+	.fc .fc-toolbar-title { font-size: 1rem; }
+	.fc .fc-toolbar .fc-button { padding: 0.28rem 0.45rem; }
+}
+
+/* Custom header toolbar styles */
+.fc-custom-toolbar { display:flex; align-items:center; gap:8px; }
+.fc-custom-toolbar .left-controls { display:flex; gap:8px; }
+.fc-custom-toolbar .fc-title { font-size:1.25rem; font-weight:700; color:var(--primary); }
+.fc-custom-toolbar .btn { border-radius:8px; }
+.fc-custom-toolbar .view-toggle.active, .fc-custom-toolbar .view-toggle:active { background: var(--primary); color:#fff; border-color: var(--primary); }
+
+/* Weekday headers color to match site blue */
+.fc .fc-col-header-cell-cushion { color: var(--primary); font-weight:700; }
+
+.fc .fc-daygrid-day.fc-day-today { background: rgba(37,99,235,0.08); }
+.fc .fc-daygrid-day:hover { background: rgba(15,23,42,0.02); transition: background .12s ease; }
+
+/* Event pills refinements */
+.fc .fc-daygrid-event { border-radius: 999px !important; padding:6px 10px !important; font-weight:600 !important; }
+
+/* Dark theme variant to match previous mockup */
+.calendar-sidebar, .panel-cream.calendar-sidebar {
+	background: linear-gradient(180deg,#0b1220, #0f172a);
+	color: #e6eef7;
+}
+
+.calendar-dark {
+	background: linear-gradient(180deg,#0b1220, #0f172a);
+	color: #e6eef7;
+}
+
+/* Override FullCalendar styles for dark look (when used) */
+.fc.calendar-dark {
+	background: transparent;
+	color: #e6eef7;
+}
+.fc.calendar-dark .fc-daygrid-day {
+	border-color: rgba(255,255,255,0.04);
+}
+.fc.calendar-dark .fc-daygrid-day-number { color: rgba(230,238,247,0.8); }
+.fc.calendar-dark .fc-toolbar-title { color: #fff; }
+
+/* Sidebar event cards */
+.sidebar-events { display:flex; flex-direction:column; gap:10px; max-height:66vh; overflow:auto; padding-top:4px; }
+.event-card { display:flex; gap:12px; align-items:center; background: rgba(255,255,255,0.03); padding:10px; border-radius:10px; transition:transform .12s ease, box-shadow .12s ease; }
+.event-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(2,6,23,0.6); }
+.event-meta { width:56px; height:56px; min-width:56px; border-radius:8px; background: rgba(255,255,255,0.03); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; }
+.event-day { font-weight:700; font-size:1.1rem; }
+.event-month { font-size:0.75rem; opacity:0.8; }
+.event-body { flex:1; }
+.event-title { font-weight:700; color:#fff; }
+.event-sub { font-size:0.82rem; opacity:0.85; }
+
+/* View buttons */
+.view-btn { border-radius: 8px; border:1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); background: transparent; }
+.view-btn.active, .view-btn:active { background: rgba(255,255,255,0.06); }
+
+/* AI assistant panel tweaks */
+#ai-output { 
+	background: linear-gradient(180deg,#ffffff, #fbfdff);
+	border: 1px solid #e6eef7;
+	border-radius: 8px;
+	padding: 8px;
+	font-size: 0.9rem;
+	color: #0b1220;
+}
+
+/* Buttons small style alignment */
+.btn-sm { padding: 6px 10px; font-size: .85rem; }
+
+/* Accessibility: focus states */
+.fc .fc-button:focus, .btn:focus, textarea:focus {
+	outline: 3px solid rgba(37,99,235,0.15);
+	outline-offset: 2px;
+}
+
+/* Subtle page-specific typography */
+.breadcrumb { background: transparent; padding:0; }
+.fw-semibold { font-weight: 600; color: #0f172a; }
+
+/* Utility for rounded panels consistent with project */
+.rounded-20 { border-radius: var(--radius); }
+
+/* Make sure the calendar adapts in narrow sidebars */
+@media (max-width: 991px) {
+	.row.g-3 { gap: 1rem; }
+	.calendar-sidebar { order: 2; }
+	.panel-cream > .fc-custom-toolbar { flex-wrap:wrap; }
+}
+
+/* Assistant IA specific tweaks (target inner elements only so we don't change HTML hierarchy) */
+.panel-cream > #ai-prompt {
+	border-radius: 10px;
+	border: 1px solid #e9eef6;
+	box-shadow: none;
+	padding: 12px;
+	background: #ffffff;
+	resize: vertical;
+	min-height: 90px;
+}
+.panel-cream > #ai-prompt::placeholder { color: #94a3b8; }
+
+.panel-cream > #ai-output {
+	background: #ffffff;
+	border-radius: 10px;
+	border: 1px solid rgba(37,99,235,0.12); /* subtle blue border inside */
+	min-height: 120px;
+	max-height: 240px;
+	overflow:auto;
+	padding: 10px;
+	margin-top: 6px;
+}
+
+/* Make the assistant panel feel like a card with soft blue accent */
+.panel-cream > #ai-output, .panel-cream > #ai-prompt {
+	box-shadow: 0 6px 18px rgba(2,6,23,0.04), 0 0 0 3px rgba(37,99,235,0.03) inset;
+}
+
+/* Buttons */
+#ai-start {
+	background: linear-gradient(180deg,#2563eb,#1e40af);
+	border-color: #1e40af;
+	color: #fff;
+	box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+}
+#ai-start i { margin-right:6px; }
+#ai-stop { background: transparent; color: #374151; border-color: #d1d5db; }
+
+/* Checkbox accent color */
+#ai-auto-apply { accent-color: #2563eb; width:18px; height:18px; }
+
+/* Header inside assistant panel */
+.panel-cream > .fw-semibold { font-size:1.05rem; color:#0b1220; }
+.panel-cream .small.text-muted { color:#4b5563; }
+
+/* Make controls compact and aligned */
+.panel-cream .d-flex.gap-2 { align-items:center; }
+
+/* Ensure proper spacing on small screens */
+@media (max-width: 767px) {
+	.panel-cream > #ai-prompt { min-height:80px; }
+	.panel-cream > #ai-output { min-height:100px; }
+}
+
+

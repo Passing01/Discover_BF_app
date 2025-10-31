@@ -1,0 +1,88 @@
+.panel-cream {
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+.panel-cream:hover {
+  box-shadow: 0 8px 32px rgba(0, 158, 226, 0.18), 0 2px 8px rgba(10, 42, 92, 0.10);
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--main-blue-light);
+}
+/* Effet de survol moderne sur les cartes Bootstrap */
+.card:hover {
+  box-shadow: 0 8px 32px rgba(0, 158, 226, 0.18), 0 2px 8px rgba(10, 42, 92, 0.10);
+  transform: translateY(-4px) scale(1.01);
+  transition: box-shadow 0.2s, transform 0.2s;
+  border-color: var(--main-blue-light);
+}
+/* Titre principal en gras */
+.flight-title-main {
+  font-weight: bold;
+}
+/* Style moderne pour les menus déroulants */
+select.form-select {
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  background: var(--main-blue-light);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s, background 0.2s;
+  appearance: none;
+}
+select.form-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--main-blue-dark);
+  background: var(--main-blue-dark);
+}
+select.form-select option {
+  color: #222;
+  background: #fff;
+}
+/* Style personnalisé pour la page de réservation de vol */
+
+/* Couleurs inspirées de la navbar */
+:root {
+  --main-blue-dark: #0a2a5c;
+  --main-blue-light: #009ee2;
+  --main-blue-bg: #eaf6fb;
+}
+
+.flight-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: var(--main-blue-bg);
+}
+.flight-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+}
+.flight-img {
+  object-fit: cover;
+  height: 160px;
+  width: 100%;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+.flight-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--main-blue-light);
+}
+.flight-info strong {
+  color: var(--main-blue-dark);
+}
+.btn-orange {
+  background: var(--main-blue-light);
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-orange:hover {
+  background: var(--main-blue-dark);
+}
+.panel-cream {
+  background: var(--main-blue-bg);
+  border: 2px solid var(--main-blue-light);
+  box-shadow: none;
+}

@@ -26,80 +26,8 @@
   <!-- Main CSS File -->
   <link href="{{ asset('assets/css/main.css') }}" rel="stylesheet">
 
-  <style>
-    :root{
-      --tourist-grad-start:#ff7e5f; /* adapter à la maquette si besoin */
-      --tourist-grad-end:#feb47b;
-    }
-    body { background: #f8f9fb; }
-    body.has-fixed-tourist { padding-top: 80px; }
-    @media (min-width: 1200px) { body.has-fixed-tourist { padding-top: 92px; } }
-    /* Left fixed sidenav spacing on desktop */
-    @media (min-width: 992px){ body.has-fixed-tourist { padding-left: 260px; } }
-    .t-header{ background: linear-gradient(90deg, var(--tourist-grad-start) 0%, var(--tourist-grad-end) 100%); color:#fff; z-index:1030; }
-    .t-header .brand { font-weight:800; letter-spacing:.3px; }
-    .t-nav a{ color: rgba(255,255,255,.95); text-decoration:none; }
-    .t-nav a:hover{ color:#212529; opacity:.9; }
-    .t-cta.btn-light{ color:#222; }
-    .container-main{ padding-top: 18px; padding-bottom: 24px; }
-    /* Logo sizing for professional look */
-    .logo-img{ height:36px; width:auto; object-fit:contain; display:block; }
-    @media (min-width: 1200px){ .logo-img{ height:44px; } }
-
-    /* Utilities for cream panels/buttons used in tourist air pages */
-    .panel-cream{
-      background: #fff7e6; /* light cream */
-      border: 1px solid #ffe1ad;
-      box-shadow: 0 6px 18px rgba(0,0,0,.06);
-      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
-      position: relative; /* create stacking context for z-index */
-      z-index: 0;
-      overflow: hidden; /* evite que le contenu (dont la barre d'actions) dépasse sur d'autres cartes */
-    }
-    .panel-cream:hover{ box-shadow: 0 10px 24px rgba(0,0,0,.10); transform: translateY(-2px); border-color:#ffdaa0; z-index: 2; }
-    .rounded-20{ border-radius:20px !important; }
-    .btn-cream{
-      background: #fff0cc;
-      border: 1px solid #ffd88a;
-      color: #8a5a00;
-      transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
-    }
-    .btn-cream:hover{ background:#ffe6ad; border-color:#ffc766; color:#6b4400; }
-    .btn-cream:focus{ outline:0; box-shadow: 0 0 0 .2rem rgba(255, 200, 100, .35); }
-    .btn-cream:active{ background:#ffd88a; border-color:#f5b94f; }
-    .btn-orange{
-      background: #ff7e5f;
-      border-color: #ff7e5f;
-      color: #fff;
-      transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
-    }
-    .btn-orange:hover{ background:#ff6a47; border-color:#ff6a47; color:#fff; }
-    .btn-orange:focus{ outline:0; box-shadow: 0 0 0 .2rem rgba(255, 126, 95, .35); }
-    .btn-orange:active{ background:#ff5c34; border-color:#ff5c34; }
-    .badge-soft{ background:#f6f7f9; border:1px solid #e9ecef; color:#6c757d; }
-    .text-orange{ color:#ff7e5f !important; }
-
-    /* Status badges */
-    .badge-status{ border:1px solid transparent; font-weight:600; letter-spacing:.2px; }
-    .badge-status.confirmed{ background:#e6fff2; border-color:#b6efcf; color:#1b8f4d; }
-    .badge-status.pending{ background:#fff9e6; border-color:#ffe4a3; color:#a86b00; }
-    .badge-status.cancelled{ background:#ffefef; border-color:#ffcbcb; color:#b23a3a; }
-
-    /* Images */
-    .img-elevate{ box-shadow: 0 8px 22px rgba(0,0,0,.08); transition: transform .2s ease, box-shadow .2s ease; }
-    .img-elevate:hover{ transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.12); }
-
-    /* (removed) floating quick actions */
-
-    /* Left fixed sidenav */
-    .t-sidenav{ position: fixed; top: 72px; left: 0; bottom: 0; width: 240px; padding: 12px 12px 24px; border-right: 1px solid #eee; background:#fff; z-index: 1029; overflow-y:auto; }
-    @media (min-width: 1200px){ .t-sidenav{ top: 84px; } }
-    @media (max-width: 991.98px){ .t-sidenav{ display:none; } }
-    .t-sidenav .title{ font-weight:700; color:#333; letter-spacing:.2px; }
-    .t-sidenav a{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; color:#495057; text-decoration:none; }
-    .t-sidenav a:hover{ background:#fff7e6; color:#8a5a00; }
-    .t-sidenav a.active{ background:#ffe6ad; color:#6b4400; border:1px solid #ffd88a; }
-  </style>
+<!-- Tourist CSS File -->
+  <link href="{{ asset('assets/css/tourist.css') }}" rel="stylesheet">
   @stack('styles')
 </head>
 <body class="has-fixed-tourist">
@@ -111,10 +39,22 @@
         <i class="bi bi-list"></i>
       </button>
       <nav class="t-nav d-none d-md-flex align-items-center gap-3">
-        <a href="{{ route('tourist.dashboard') }}"><i class="bi bi-house me-1"></i>Accueil</a>
-        <a href="{{ route('tourist.itinerary') }}"><i class="bi bi-map me-1"></i>Itinéraire</a>
-        <a href="{{ route('events.index') }}"><i class="bi bi-calendar-event me-1"></i>Évènements</a>
-        <a href="{{ route('assistant.index') }}"><i class="bi bi-robot me-1"></i>Assistant</a>
+        <a href="{{ route('tourist.dashboard') }}" class="nav-link px-3">
+          <span class="icon"><i class="bi bi-house"></i></span>
+          <span class="title">Accueil</span>
+        </a>
+        <a href="{{ route('tourist.itinerary') }}" class="nav-link px-3">
+          <span class="icon"><i class="bi bi-map"></i></span>
+          <span class="title">Itinéraire</span>
+        </a>
+        <a href="{{ route('events.index') }}" class="nav-link px-3">
+          <span class="icon"><i class="bi bi-calendar-event"></i></span>
+          <span class="title">Évènements</span>
+        </a>
+        <a href="{{ route('assistant.index') }}" class="nav-link px-3">
+          <span class="icon"><i class="bi bi-robot"></i></span>
+          <span class="title">Assistant</span>
+        </a>
         @if(auth()->check() && ((auth()->user()->role ?? null) === 'event_organizer'))
           <div class="vr mx-1 opacity-50"></div>
           <a href="{{ route('organizer.events.index') }}"><i class="bi bi-collection me-1"></i>Mes évènements</a>
@@ -151,14 +91,11 @@
       <div class="mb-2 title small text-uppercase text-muted">Actions rapides</div>
       <nav class="vstack gap-1">
         <a href="{{ route('tourist.dashboard') }}" class="@if(request()->routeIs('tourist.dashboard')) active @endif"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
-        <a href="{{ route('assistant.index') }}" class="@if(request()->routeIs('assistant.*')) active @endif"><i class="bi bi-robot"></i> Planifier un voyage</a>
-        <a href="{{ route('tourist.itinerary') }}" class="@if(request()->routeIs('tourist.itinerary')) active @endif"><i class="bi bi-map"></i> Itinéraire</a>
         <a href="{{ route('air.flights.index') }}" class="@if(request()->routeIs('air.flights.*')) active @endif"><i class="bi bi-airplane"></i> Vols</a>
         <a href="{{ route('sites.index') }}" class="@if(request()->routeIs('sites.*')) active @endif"><i class="bi bi-building"></i> Sites touristiques</a>
         <a href="{{ route('air.bookings.index') }}" class="@if(request()->routeIs('air.bookings.*')) active @endif"><i class="bi bi-journal-check"></i> Mes réservations de vol</a>
         <a href="{{ route('tourist.bookings.index') }}" class="@if(request()->routeIs('tourist.bookings.*')) active @endif"><i class="bi bi-journal-check"></i> Mes réservations</a>
         <a href="{{ route('tourist.calendar') }}" class="@if(request()->routeIs('tourist.calendar*')) active @endif"><i class="bi bi-calendar3"></i> Calendrier</a>
-        <a href="{{ route('events.index') }}" class="@if(request()->routeIs('events.*')) active @endif"><i class="bi bi-calendar-event"></i> Évènements</a>
         <a href="{{ route('food.restaurants.index') }}" class="@if(request()->routeIs('food.restaurants.*')) active @endif"><i class="bi bi-egg-fried"></i> Restaurants</a>
         @if(auth()->check() && ((auth()->user()->role ?? null) === 'event_organizer'))
           <div class="mt-2 mb-1 small text-uppercase text-muted">Organisateur</div>
@@ -179,15 +116,14 @@
           <a href="{{ route('agency.hotels.create') }}" class="@if(request()->routeIs('agency.hotels.create')) active @endif"><i class="bi bi-plus-circle"></i> Ajouter un hôtel</a>
           <a href="{{ route('agency.reservations.index') }}" class="@if(request()->routeIs('agency.reservations.*')) active @endif"><i class="bi bi-journal-text"></i> Réservations</a>
         @endif
-        <a class="@if(request()->routeIs('transport.taxi.index')) active @endif" href="{{ route('transport.taxi.index') }}"> <i class="bi bi-bus"></i> Réserver un taxi</a>
-        <a class="@if(request()->routeIs('transport.bus.index')) active @endif" href="{{ route('transport.bus.index') }}"> <i class="bi bi-bus"></i> Réserver un bus</a>
+        <a class="@if(request()->routeIs('transport.taxi.index')) active @endif" href="{{ route('transport.taxi.index') }}"> <i class="bi bi-taxi-front"></i> Réserver un taxi</a>
+        <a class="@if(request()->routeIs('transport.bus.index')) active @endif" href="{{ route('transport.bus.index') }}"> <i class="bi bi-bus-front"></i> Réserver un bus</a>
         <a href="{{ route('profile.edit') }}" class="@if(request()->routeIs('profile.edit')) active @endif"><i class="bi bi-person"></i> Profil</a>
         <!-- <a class="@if(request()->routeIs('assistant.*')) active @endif" href="{{ route('assistant.index') }}">Planifier un voyage</a> -->
         <!-- <a class="@if(request()->routeIs('air.flights.wizard')) active @endif" href="{{ route('air.flights.wizard') }}">Réserver un vol</a> -->
         <a class="@if(request()->routeIs('tourist.hotels.index')) active @endif" href="{{ route('tourist.hotels.index') }}"> <i class="bi bi-building"></i> Réserver un séjour</a>
         <!-- <a class="@if(request()->routeIs('events.index')) active @endif" href="{{ route('events.index') }}"> <i class="bi bi-calendar-event"></i> Explorer la carte</a> -->
         <div class="@if(request()->routeIs('assistant.*')) active @endif">Assistant</div>
-        <a class="@if(request()->routeIs('assistant.index')) active @endif" href="{{ route('assistant.index') }}"> <i class="bi bi-robot"></i> Assistant vocal</a>
         <a class="@if(request()->routeIs('tourist.community')) active @endif" href="{{ route('tourist.community') }}"> <i class="bi bi-people"></i> Communauté</a>
         @if(auth()->check() && ((auth()->user()->role ?? null) === 'guide'))
           <div class="mt-2 mb-1 small text-uppercase text-muted">Guide</div>

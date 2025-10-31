@@ -1,0 +1,176 @@
+/* Styles spécifiques pour la page Restaurants — moderne, responsive et en accord
+   avec la couleur de la navbar (header)
+*/
+:root{
+  --nav-start: #141e30; /* reprendre la couleur de début du header */
+  --nav-end: #009fff;   /* reprendre la couleur de fin du header */
+  --card-bg: #ffffff;   /* neutral white for inner card area (removed yellowish tone) */
+  --card-border: rgba(33,147,176,0.12);
+  --accent: linear-gradient(90deg, var(--nav-start), var(--nav-end));
+}
+
+/* Container tweaks */
+.restaurant-list .panel-cream {
+  /* override the global .panel-cream to use a modern white surface */
+  background: #ffffff !important; /* neutral white for a cleaner, modern look — force override */
+  border-radius: 20px;
+  border: 1px solid rgba(6,30,62,0.06) !important; /* subtle neutral border */
+  position: relative;
+  overflow: hidden;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .18s ease;
+}
+
+/* Gradient subtle outline using pseudo-element for smooth rounded borders */
+.restaurant-list .panel-cream::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 1.5px; /* thickness */
+  background: linear-gradient(90deg, rgba(20,30,48,0.03), rgba(0,159,255,0.03));
+  /* mask to keep the inner content area transparent so the gradient looks like an outline
+     Provide both -webkit-mask and mask for broader compatibility. */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; /* Safari/WebKit */
+  mask-composite: exclude;    /* Standard */
+}
+
+/* elevate card content above the decorative border */
+.restaurant-list .panel-cream > * { position: relative; z-index: 1; }
+
+/* Inner content area: keep a warm cream band to preserve the project's tone */
+.restaurant-list .panel-cream .p-3{
+  background: var(--card-bg) !important; /* force white for inner content area */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  padding: 18px;
+}
+
+/* Image/cover styling */
+.restaurant-cover{
+  height: 160px;
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  background: linear-gradient(180deg, rgba(20,30,48,0.03), rgba(0,159,255,0.02));
+  border-bottom: 1px solid rgba(0,0,0,0.02);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.restaurant-placeholder{
+  height:160px;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(0,0,0,0.35);
+  background:linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.9));
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* Content */
+.restaurant-card .fw-semibold{ font-size:1.05rem; }
+.restaurant-card .text-muted small, .restaurant-card .text-muted{ color: rgba(0,0,0,0.55); }
+.restaurant-card p{ color: rgba(0,0,0,0.72); }
+
+/* Make the card content area use consistent padding and spacing */
+.restaurant-card .p-3{ padding: 18px; }
+
+/* Subtle top band for cards to split image/content */
+.restaurant-card .card-top-band{ height:10px; background: linear-gradient(90deg, rgba(20,30,48,0.02), rgba(0,159,255,0.02)); margin-bottom:8px; border-top-left-radius: 20px; border-top-right-radius:20px; }
+
+/* Rating star accent */
+.restaurant-card .bi-star-fill{ color:#ffb324; }
+
+/* Action buttons styling — align with header color */
+.restaurant-card .btn-outline-primary{
+  color: var(--nav-end);
+  border-color: rgba(0,159,255,0.18);
+  background: transparent;
+}
+.restaurant-card .btn-outline-primary:hover{
+  background: linear-gradient(90deg, rgba(20,30,48,0.03), rgba(0,159,255,0.06));
+  color: #fff;
+  border-color: rgba(0,159,255,0.28);
+}
+.restaurant-card .btn-primary{
+  background: var(--nav-end);
+  border-color: var(--nav-end);
+  box-shadow: 0 6px 18px rgba(0,159,255,0.12);
+}
+.restaurant-card .btn-primary:hover{ filter: brightness(.95); transform: translateY(-1px); }
+
+/* Responsive: make actions full width on small screens */
+@media (max-width: 575.98px){
+  .restaurant-card .mt-auto{ flex-direction: column; gap:8px; }
+  .restaurant-card .mt-auto .btn{ width:100%; }
+  .restaurant-list .col-md-4{ flex: 0 0 100%; max-width: 100%; }
+}
+
+/* Improve grid spacing and card sizing */
+@media (min-width: 768px){
+  .restaurant-list .col-md-4{ padding-left:8px; padding-right:8px; }
+}
+@media (max-width: 767.98px){
+  .restaurant-list .col-md-4{ margin-bottom: 14px; }
+}
+
+/* Modern hover */
+.restaurant-list .panel-cream:hover{
+  transform: translateY(-6px);
+  box-shadow: 0 26px 48px rgba(4,50,80,0.10);
+  border-color: rgba(0,159,255,0.18);
+}
+
+/* Stronger gradient outline to match navbar color for desktop */
+@media (min-width: 992px){
+  .restaurant-list .panel-cream::before{
+    background: linear-gradient(90deg, rgba(20,30,48,0.06), rgba(0,159,255,0.06));
+    padding: 2px;
+  }
+}
+
+/* Slightly larger cards on wider screens */
+@media (min-width: 1200px){
+  .restaurant-list .col-md-4{ max-width: 33.333333%; }
+  .restaurant-card .fw-semibold{ font-size:1.08rem; }
+}
+
+/* Accessibility: focus outline */
+.restaurant-list .panel-cream:focus-within{
+  box-shadow: 0 8px 30px rgba(0,159,255,0.12);
+}
+
+/* Slight typography tweak for title area */
+.restaurant-list h1{
+  font-family: 'Raleway', 'Roboto', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #10232b; /* deep slate for strong, professional look */
+  margin-bottom: 6px;
+  line-height: 1.02;
+  font-size: 2.6rem; /* desktop default */
+}
+
+.restaurant-list .subtitle{
+  font-size: 1.05rem;
+  color: #6b7280; /* muted gray */
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+@media (max-width: 991.98px){
+  .restaurant-list h1{ font-size: 2.2rem; }
+}
+@media (max-width: 575.98px){
+  .restaurant-list h1{ font-size: 1.8rem; }
+  .restaurant-list .subtitle{ font-size: .98rem; }
+}
+
+/* Pagination center */
+.restaurant-pagination{ display:flex; justify-content:center; margin-top:18px; }
+
+/* Small utility to match small text to header tone */
+.text-nav-accent{ color: var(--nav-end) !important; }

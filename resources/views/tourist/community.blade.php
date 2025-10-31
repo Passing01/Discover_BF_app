@@ -1,3 +1,6 @@
+@php
+  $posts = $posts ?? collect();
+@endphp
 @extends('layouts.tourist')
 
 @section('content')
@@ -14,18 +17,13 @@
         @foreach($posts as $post)
           @include('community.partials._post', ['post' => $post])
         @endforeach
-        
         <div class="d-flex justify-content-center mt-4">
           {{ $posts->links() }}
         </div>
       @else
-        <div class="text-center py-5">
-          <i class="bi bi-people fs-1 text-muted mb-3"></i>
-          <h5>Aucune publication pour le moment</h5>
-          <p class="text-muted mb-4">Soyez le premier à partager quelque chose avec la communauté !</p>
-          <a href="{{ route('community.posts.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Créer une publication
-          </a>
+        <div class="vstack gap-2 small">
+          <div class="border rounded p-2">Fatou — "Le meilleur maquis pour le tô ?" <a href="{{ route('events.index') }}" class="ms-1">Répondre</a></div>
+          <div class="border rounded p-2">Issa — "Prix du taxi depuis OUA ?" <a href="{{ route('transport.taxi.index') }}" class="ms-1">Répondre</a></div>
         </div>
       @endif
     </div>

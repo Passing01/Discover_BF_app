@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class Restaurant extends Model
 {
@@ -42,5 +44,23 @@ class Restaurant extends Model
     public function reservations()
     {
         return $this->hasMany(RestaurantReservation::class);
+    }
+
+    /**
+     * Retourne l'URL complète de l'image de couverture ou null si aucune.
+     */
+    public function getCoverUrlAttribute(): ?string
+    {
+        if (empty($this->cover_image)) {
+            return null;
+        }
+
+        // Si c'est déjà une URL absolue ou commence par /, la retourner telle quelle
+        if (Str::startsWith($this->cover_image, ['http://', 'https://', '/'])) {
+            return $this->cover_image;
+        }
+
+        // Sinon, présumer que l'image est stockée dans storage/app/public
+        return asset('storage/'.$this->cover_image);
     }
 }

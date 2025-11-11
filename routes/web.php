@@ -32,10 +32,18 @@ use App\Http\Controllers\HotelManagerController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\SiteManagerProfileController;
 use App\Http\Controllers\PaymentController;
+use App\Models\Site;
+use App\Models\Event;
+use App\Models\Ad;
+use App\Models\User;
+use App\Models\Guide;
+use App\Models\HotelBooking;
+use App\Models\EventBooking;
+use App\Models\SiteBooking;
+use App\Models\CommunityPost;
+use App\Http\Controllers\landing_page\LandingPageController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [LandingPageController::class, 'index']);
 
 // Stripe webhook (public endpoint)
 Route::post('/webhooks/stripe', [PaymentController::class, 'handleWebhook'])->name('stripe.webhook');

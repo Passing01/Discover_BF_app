@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class CommunityPost extends Model
 {
@@ -161,5 +162,16 @@ class CommunityPost extends Model
     public function getLikesCountAttribute(): int
     {
         return $this->likes()->count();
+    }
+
+    /**
+     * Accessor: Unified public URL for the post image.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $path = $this->image ?? null;
+        if (!$path) return null;
+        if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) return $path;
+        return Storage::url($path);
     }
 }

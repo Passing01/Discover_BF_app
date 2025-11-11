@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class Ad extends Model
 {
@@ -36,5 +37,16 @@ class Ad extends Model
             ->where(function($q) use ($now){
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now);
             });
+    }
+
+    /**
+     * Accessor: Unified public URL for the ad image.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $path = $this->image_path ?? null;
+        if (!$path) return null;
+        if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) return $path;
+        return Storage::url($path);
     }
 }

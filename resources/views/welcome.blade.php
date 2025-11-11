@@ -59,58 +59,23 @@
           <a href="{{ route('sites.index') }}" class="btn btn-outline-primary btn-sm">Voir tout</a>
         </div>
         <div class="row g-4">
+          @forelse($popularActivities as $site)
           <div class="col-md-6 col-lg-3">
-            <div class="card card-spot h-100">
-              <img src="{{ asset('assets/img/services-1.jpg') }}" class="card-img-top" alt="">
+            <div class="card card-spot h-100 position-relative">
+              <img src="{{ $site->image_url ?? asset('assets/img/services-1.jpg') }}" class="card-img-top" alt="">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-warning text-dark">Randonnée</span>
-                  <small class="text-muted"><i class="bi bi-star-fill text-warning"></i> 4.9</small>
+                  <span class="badge bg-warning text-dark">{{ $site->category }}</span>
                 </div>
-                <h3 class="h6 mb-2">Balades à travers les collines</h3>
-                <p class="card-text text-muted small mb-0">Guides locaux et sentiers sécurisés</p>
+                <h3 class="h6 mb-2">{{ $site->name }}</h3>
+                <p class="card-text text-muted small mb-0">{{ $site->city }}</p>
+                <a href="{{ route('sites.show', $site) }}" class="stretched-link"></a>
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-3">
-            <div class="card card-spot h-100">
-              <img src="{{ asset('assets/img/services-2.jpg') }}" class="card-img-top" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-info text-dark">Culture</span>
-                  <small class="text-muted"><i class="bi bi-star-fill text-warning"></i> 4.8</small>
-                </div>
-                <h3 class="h6 mb-2">Visites de musées</h3>
-                <p class="card-text text-muted small mb-0">Patrimoine et traditions</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-3">
-            <div class="card card-spot h-100">
-              <img src="{{ asset('assets/img/services-3.jpg') }}" class="card-img-top" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-success">Nature</span>
-                  <small class="text-muted"><i class="bi bi-star-fill text-warning"></i> 5.0</small>
-                </div>
-                <h3 class="h6 mb-2">Parcs et réserves</h3>
-                <p class="card-text text-muted small mb-0">Faune et flore préservées</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-3">
-            <div class="card card-spot h-100">
-              <img src="{{ asset('assets/img/working-1.jpg') }}" class="card-img-top" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-danger">Aventure</span>
-                  <small class="text-muted"><i class="bi bi-star-fill text-warning"></i> 4.7</small>
-                </div>
-                <h3 class="h6 mb-2">Excursions en 4x4</h3>
-                <p class="card-text text-muted small mb-0">Adrénaline garantie</p>
-              </div>
-            </div>
-          </div>
+          @empty
+          <div class="col-12"><p class="text-muted">Aucune activité pour le moment.</p></div>
+          @endforelse
         </div>
       </div>
     </section>
@@ -126,50 +91,24 @@
           <a href="{{ route('tourist.hotels.index') }}" class="btn btn-outline-primary btn-sm">Explorer</a>
         </div>
         <div class="row g-4">
+          @forelse($popularDestinations as $site)
           <div class="col-sm-6 col-lg-3">
-            <div class="card card-place h-100">
-              <img class="card-img-top" src="{{ asset('assets/img/working-2.jpg') }}" alt="">
+            <div class="card card-place h-100 position-relative">
+              <img class="card-img-top" src="{{ $site->image_url ?? asset('assets/img/working-2.jpg') }}" alt="">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
-                  <h3 class="h6 mb-0">Lac de Tengréla</h3>
-                  <span class="price">à partir de 25 000 CFA</span>
+                  <h3 class="h6 mb-0">{{ $site->name }}</h3>
+                  @if(!is_null($site->price_min))
+                    <span class="price">à partir de {{ number_format($site->price_min, 0, ',', ' ') }} CFA</span>
+                  @endif
                 </div>
+                <a href="{{ route('sites.show', $site) }}" class="stretched-link"></a>
               </div>
             </div>
           </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card card-place h-100">
-              <img class="card-img-top" src="{{ asset('assets/img/working-3.jpg') }}" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h3 class="h6 mb-0">Banfora Cascades</h3>
-                  <span class="price">à partir de 30 000 CFA</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card card-place h-100">
-              <img class="card-img-top" src="{{ asset('assets/img/working-4.jpg') }}" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h3 class="h6 mb-0">Koudougou</h3>
-                  <span class="price">à partir de 18 000 CFA</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-6 col-lg-3">
-            <div class="card card-place h-100">
-              <img class="card-img-top" src="{{ asset('assets/img/services.jpg') }}" alt="">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h3 class="h6 mb-0">Ouagadougou</h3>
-                  <span class="price">à partir de 20 000 CFA</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          @empty
+          <div class="col-12"><p class="text-muted">Aucune destination pour le moment.</p></div>
+          @endforelse
         </div>
       </div>
     </section>
@@ -228,29 +167,47 @@
 
         <div class="row gy-4">
           <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-            <h3>Voluptatem dignissimos provident laboris nisi ut aliquip ex ea commodo</h3>
-            <img src="{{ asset('assets/img/about.jpg') }}" class="img-fluid rounded-4 mb-4" alt="">
-            <p>Ut fugiat ut sunt quia veniam. Voluptate perferendis perspiciatis quod nisi et. Placeat debitis quia recusandae odit et consequatur voluptatem. Dignissimos pariatur consectetur fugiat voluptas ea.</p>
-            <p>Temporibus nihil enim deserunt sed ea. Provident sit expedita aut cupiditate nihil vitae quo officia vel. Blanditiis eligendi possimus et in cum. Quidem eos ut sint rem veniam qui. Ut ut repellendus nobis tempore doloribus debitis explicabo similique sit. Accusantium sed ut omnis beatae neque deleniti repellendus.</p>
+            @if(!empty($aboutSite))
+              <h3>{{ $aboutSite->name }}</h3>
+              <img src="{{ $aboutSite->image_url ?? asset('assets/img/about.jpg') }}" class="img-fluid rounded-4 mb-4" alt="{{ $aboutSite->name }}">
+              <p>{{ \Illuminate\Support\Str::limit($aboutSite->description, 260) }}</p>
+              @if(!empty($aboutSite->city) || !empty($aboutSite->category))
+              <p class="mb-0">
+                @if(!empty($aboutSite->city))<strong>Ville:</strong> {{ $aboutSite->city }} @endif
+                @if(!empty($aboutSite->category))<span class="ms-3"><strong>Catégorie:</strong> {{ $aboutSite->category }}</span>@endif
+              </p>
+              @endif
+            @else
+              <h3>À propos</h3>
+              <img src="{{ asset('assets/img/about.jpg') }}" class="img-fluid rounded-4 mb-4" alt="">
+              <p>Découvrez les plus beaux sites et activités au Burkina Faso, sélectionnés et gérés par notre communauté.</p>
+            @endif
           </div>
           <div class="col-lg-6" data-aos="fade-up" data-aos-delay="250">
             <div class="content ps-0 ps-lg-5">
-              <p class="fst-italic">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                magna aliqua.
-              </p>
+              @if(!empty($aboutSite))
+              <p class="fst-italic">{{ \Illuminate\Support\Str::limit($aboutSite->description, 180) }}</p>
               <ul>
-                <li><i class="bi bi-check-circle-fill"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
-                <li><i class="bi bi-check-circle-fill"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
-                <li><i class="bi bi-check-circle-fill"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
+                @if(!empty($aboutSite->price_min))
+                <li><i class="bi bi-check-circle-fill"></i> <span>À partir de {{ number_format($aboutSite->price_min, 0, ',', ' ') }} CFA</span></li>
+                @endif
+                @if(!empty($aboutSite->address))
+                <li><i class="bi bi-check-circle-fill"></i> <span>{{ $aboutSite->address }}</span></li>
+                @endif
+                @if(!empty($aboutSite->phone))
+                <li><i class="bi bi-check-circle-fill"></i> <span>{{ $aboutSite->phone }}</span></li>
+                @endif
               </ul>
-              <p>
-                Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident
-              </p>
-
+              @else
+              <p class="fst-italic">Partez à la découverte des trésors naturels et culturels du Burkina Faso.</p>
+              <ul>
+                <li><i class="bi bi-check-circle-fill"></i> <span>Expériences authentiques et locales.</span></li>
+                <li><i class="bi bi-check-circle-fill"></i> <span>Sites vérifiés et guides certifiés.</span></li>
+                <li><i class="bi bi-check-circle-fill"></i> <span>Réservation simple et sécurisée.</span></li>
+              </ul>
+              @endif
               <div class="position-relative mt-4">
-                <img src="{{ asset('assets/img/about-2.jpg') }}" class="img-fluid rounded-4" alt="">
+                <img src="{{ !empty($aboutSite?->image_url) ? $aboutSite->image_url : asset('assets/img/about-2.jpg') }}" class="img-fluid rounded-4" alt="{{ $aboutSite->name ?? 'About' }}">
                 <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="glightbox pulsating-play-btn"></a>
               </div>
             </div>
@@ -272,7 +229,7 @@
             <div class="stats-item d-flex align-items-center w-100 h-100">
               <i class="bi bi-emoji-smile color-blue flex-shrink-0"></i>
               <div>
-                <span data-purecounter-start="0" data-purecounter-end="232" data-purecounter-duration="1" class="purecounter"></span>
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['happy_clients'] ?? 0 }}" data-purecounter-duration="1" class="purecounter"></span>
                 <p>Happy Clients</p>
               </div>
             </div>
@@ -282,7 +239,7 @@
             <div class="stats-item d-flex align-items-center w-100 h-100">
               <i class="bi bi-journal-richtext color-orange flex-shrink-0"></i>
               <div>
-                <span data-purecounter-start="0" data-purecounter-end="521" data-purecounter-duration="1" class="purecounter"></span>
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['projects'] ?? 0 }}" data-purecounter-duration="1" class="purecounter"></span>
                 <p>Projects</p>
               </div>
             </div>
@@ -292,7 +249,7 @@
             <div class="stats-item d-flex align-items-center w-100 h-100">
               <i class="bi bi-headset color-green flex-shrink-0"></i>
               <div>
-                <span data-purecounter-start="0" data-purecounter-end="1463" data-purecounter-duration="1" class="purecounter"></span>
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['hours_support'] ?? 0 }}" data-purecounter-duration="1" class="purecounter"></span>
                 <p>Hours Of Support</p>
               </div>
             </div>
@@ -302,7 +259,7 @@
             <div class="stats-item d-flex align-items-center w-100 h-100">
               <i class="bi bi-people color-pink flex-shrink-0"></i>
               <div>
-                <span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1" class="purecounter"></span>
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['hard_workers'] ?? 0 }}" data-purecounter-duration="1" class="purecounter"></span>
                 <p>Hard Workers</p>
               </div>
             </div>
@@ -326,58 +283,26 @@
       <div class="container" data-aos="fade-up" data-aos-delay="100">
 
         <div class="row gy-5">
-
+          @forelse($upcomingEvents as $event)
           <div class="col-xl-4 col-md-6" data-aos="zoom-in" data-aos-delay="200">
             <div class="service-item">
               <div class="img">
-                <img src="{{ asset('assets/img/services-1.jpg') }}" class="img-fluid" alt="">
+                <img src="{{ $event->image_url ?? asset('assets/img/services-1.jpg') }}" class="img-fluid" alt="">
               </div>
               <div class="details position-relative">
                 <div class="icon">
                   <i class="bi bi-activity"></i>
                 </div>
-                <a href="service-details.html" class="stretched-link">
-                  <h3>Nesciunt Mete</h3>
+                <a href="{{ route('events.show', $event) }}" class="stretched-link">
+                  <h3>{{ $event->name }}</h3>
                 </a>
-                <p>Provident nihil minus qui consequatur non omnis maiores. Eos accusantium minus dolores iure perferendis.</p>
+                <p>{{ \Illuminate\Support\Str::limit($event->description, 120) }}</p>
               </div>
             </div>
           </div><!-- End Service Item -->
-
-          <div class="col-xl-4 col-md-6" data-aos="zoom-in" data-aos-delay="300">
-            <div class="service-item">
-              <div class="img">
-                <img src="{{ asset('assets/img/services-2.jpg') }}" class="img-fluid" alt="">
-              </div>
-              <div class="details position-relative">
-                <div class="icon">
-                  <i class="bi bi-broadcast"></i>
-                </div>
-                <a href="service-details.html" class="stretched-link">
-                  <h3>Eosle Commodi</h3>
-                </a>
-                <p>Ut autem aut autem non a. Sint sint sit facilis nam iusto sint. Libero corrupti neque eum hic non ut nesciunt dolorem.</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-xl-4 col-md-6" data-aos="zoom-in" data-aos-delay="400">
-            <div class="service-item">
-              <div class="img">
-                <img src="{{ asset('assets/img/services-3.jpg') }}" class="img-fluid" alt="">
-              </div>
-              <div class="details position-relative">
-                <div class="icon">
-                  <i class="bi bi-easel"></i>
-                </div>
-                <a href="service-details.html" class="stretched-link">
-                  <h3>Ledo Markt</h3>
-                </a>
-                <p>Ut excepturi voluptatem nisi sed. Quidem fuga consequatur. Minus ea aut. Vel qui id voluptas adipisci eos earum corrupti.</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
+          @empty
+          <div class="col-12"><p class="text-muted">Aucun événement à venir pour le moment.</p></div>
+          @endforelse
         </div>
 
       </div>
@@ -390,31 +315,20 @@
       <div class="container" data-aos="fade-up">
 
         <div class="row gy-4">
-
+          @forelse($clientAds as $ad)
           <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-1.png') }}" class="img-fluid" alt="">
+            @php($img = $ad->image_url ?? asset('assets/img/clients/client-1.png'))
+            @if(!empty($ad->target_url))
+              <a href="{{ $ad->target_url }}" target="_blank" rel="noopener">
+                <img src="{{ $img }}" class="img-fluid" alt="{{ $ad->title }}">
+              </a>
+            @else
+              <img src="{{ $img }}" class="img-fluid" alt="{{ $ad->title }}">
+            @endif
           </div><!-- End Client Item -->
-
-          <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-2.png') }}" class="img-fluid" alt="">
-          </div><!-- End Client Item -->
-
-          <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-3.png') }}" class="img-fluid" alt="">
-          </div><!-- End Client Item -->
-
-          <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-4.png') }}" class="img-fluid" alt="">
-          </div><!-- End Client Item -->
-
-          <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-5.png') }}" class="img-fluid" alt="">
-          </div><!-- End Client Item -->
-
-          <div class="col-xl-2 col-md-3 col-6 client-logo">
-            <img src="{{ asset('assets/img/clients/client-6.png') }}" class="img-fluid" alt="">
-          </div><!-- End Client Item -->
-
+          @empty
+          <div class="col-12"><p class="text-muted">Aucun partenaire pour le moment.</p></div>
+          @endforelse
         </div>
 
       </div>
@@ -427,137 +341,41 @@
       <div class="container">
 
         <ul class="nav nav-tabs row  d-flex" data-aos="fade-up" data-aos-delay="100">
+          @php($icons = ['bi-binoculars','bi-box-seam','bi-brightness-high','bi-command'])
+          @forelse($featureSites as $idx => $site)
           <li class="nav-item col-3">
-            <a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1">
-              <i class="bi bi-binoculars"></i>
-              <h4 class="d-none d-lg-block">Modi sit est dela pireda nest</h4>
+            <a class="nav-link {{ $idx === 0 ? 'active show' : '' }}" data-bs-toggle="tab" data-bs-target="#features-tab-{{ $idx+1 }}">
+              <i class="bi {{ $icons[$idx % count($icons)] }}"></i>
+              <h4 class="d-none d-lg-block">{{ $site->name }}</h4>
             </a>
           </li>
-          <li class="nav-item col-3">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
-              <i class="bi bi-box-seam"></i>
-              <h4 class="d-none d-lg-block">Unde praesenti mara setra le</h4>
-            </a>
-          </li>
-          <li class="nav-item col-3">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3">
-              <i class="bi bi-brightness-high"></i>
-              <h4 class="d-none d-lg-block">Pariatur explica nitro dela</h4>
-            </a>
-          </li>
-          <li class="nav-item col-3">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-4">
-              <i class="bi bi-command"></i>
-              <h4 class="d-none d-lg-block">Nostrum qui dile node</h4>
-            </a>
-          </li>
+          @empty
+          @endforelse
         </ul><!-- End Tab Nav -->
 
         <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
-
-          <div class="tab-pane fade active show" id="features-tab-1">
+          @foreach($featureSites as $idx => $site)
+          <div class="tab-pane fade {{ $idx === 0 ? 'active show' : '' }}" id="features-tab-{{ $idx+1 }}">
             <div class="row">
               <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
-                <h3>Voluptatem dignissimos provident quasi corporis voluptates sit assumenda.</h3>
-                <p class="fst-italic">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                  magna aliqua.
-                </p>
+                <h3>{{ $site->name }}</h3>
+                <p class="fst-italic">{{ \Illuminate\Support\Str::limit($site->description, 160) }}</p>
                 <ul>
-                  <li><i class="bi bi-check2-all"></i>
-                    <spab>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</spab>
-                  </li>
-                  <li><i class="bi bi-check2-all"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit</span>.</li>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
-                </ul>
-                <p>
-                  Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                  velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum
-                </p>
-              </div>
-              <div class="col-lg-6 order-1 order-lg-2 text-center">
-                <img src="{{ asset('assets/img/working-1.jpg') }}" alt="" class="img-fluid">
-              </div>
-            </div>
-          </div><!-- End Tab Content Item -->
-
-          <div class="tab-pane fade" id="features-tab-2">
-            <div class="row">
-              <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
-                <h3>Neque exercitationem debitis soluta quos debitis quo mollitia officia est</h3>
-                <p>
-                  Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                  velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum
-                </p>
-                <p class="fst-italic">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                  magna aliqua.
-                </p>
-                <ul>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Provident mollitia neque rerum asperiores dolores quos qui a. Ipsum neque dolor voluptate nisi sed.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
+                  <li><i class="bi bi-check2-all"></i> <span>{{ $site->city }}</span></li>
+                  @if(!is_null($site->price_min))
+                  <li><i class="bi bi-check2-all"></i> <span>À partir de {{ number_format($site->price_min, 0, ',', ' ') }} CFA</span></li>
+                  @endif
+                  @if(!empty($site->category))
+                  <li><i class="bi bi-check2-all"></i> <span>{{ $site->category }}</span></li>
+                  @endif
                 </ul>
               </div>
               <div class="col-lg-6 order-1 order-lg-2 text-center">
-                <img src="{{ asset('assets/img/working-2.jpg') }}" alt="" class="img-fluid">
+                <img src="{{ $site->image_url ?? asset('assets/img/working-1.jpg') }}" alt="{{ $site->name }}" class="img-fluid">
               </div>
             </div>
           </div><!-- End Tab Content Item -->
-
-          <div class="tab-pane fade" id="features-tab-3">
-            <div class="row">
-              <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
-                <h3>Voluptatibus commodi ut accusamus ea repudiandae ut autem dolor ut assumenda</h3>
-                <p>
-                  Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                  velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum
-                </p>
-                <ul>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Provident mollitia neque rerum asperiores dolores quos qui a. Ipsum neque dolor voluptate nisi sed.</span></li>
-                </ul>
-                <p class="fst-italic">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                  magna aliqua.
-                </p>
-              </div>
-              <div class="col-lg-6 order-1 order-lg-2 text-center">
-                <img src="{{ asset('assets/img/working-3.jpg') }}" alt="" class="img-fluid">
-              </div>
-            </div>
-          </div><!-- End Tab Content Item -->
-
-          <div class="tab-pane fade" id="features-tab-4">
-            <div class="row">
-              <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0">
-                <h3>Omnis fugiat ea explicabo sunt dolorum asperiores sequi inventore rerum</h3>
-                <p>
-                  Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                  velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum
-                </p>
-                <p class="fst-italic">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                  magna aliqua.
-                </p>
-                <ul>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
-                  <li><i class="bi bi-check2-all"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
-                </ul>
-              </div>
-              <div class="col-lg-6 order-1 order-lg-2 text-center">
-                <img src="{{ asset('assets/img/working-4.jpg') }}" alt="" class="img-fluid">
-              </div>
-            </div>
-          </div><!-- End Tab Content Item -->
-
+          @endforeach
         </div>
 
       </div>
@@ -576,67 +394,20 @@
       <div class="container">
 
         <div class="row gy-4">
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+          @php($icons2 = ['bi-briefcase','bi-card-checklist','bi-bar-chart','bi-binoculars','bi-brightness-high','bi-calendar4-week'])
+          @forelse($serviceSites as $idx => $site)
+          <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + ($idx%6)*100 }}">
             <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-briefcase icon flex-shrink-0"></i>
+              <i class="bi {{ $icons2[$idx % count($icons2)] }} icon flex-shrink-0"></i>
               <div>
-                <h4 class="title"><a href="#" class="stretched-link">Lorem Ipsum</a></h4>
-                <p class="description">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</p>
+                <h4 class="title"><a href="{{ route('sites.show', $site) }}" class="stretched-link">{{ $site->name }}</a></h4>
+                <p class="description">{{ \Illuminate\Support\Str::limit($site->description, 140) }}</p>
               </div>
             </div>
           </div><!-- End Service Item -->
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-card-checklist icon flex-shrink-0"></i>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Dolor Sitema</a></h4>
-                <p class="description">Minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat tarad limino ata</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-bar-chart icon flex-shrink-0"></i>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Sed ut perspiciatis</a></h4>
-                <p class="description">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
-            <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-binoculars icon flex-shrink-0"></i>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Magni Dolores</a></h4>
-                <p class="description">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
-            <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-brightness-high icon flex-shrink-0"></i>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Nemo Enim</a></h4>
-                <p class="description">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
-          <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
-            <div class="service-item d-flex position-relative h-100">
-              <i class="bi bi-calendar4-week icon flex-shrink-0"></i>
-              <div>
-                <h4 class="title"><a href="#" class="stretched-link">Eiusmod Tempor</a></h4>
-                <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
-              </div>
-            </div>
-          </div><!-- End Service Item -->
-
+          @empty
+          <div class="col-12"><p class="text-muted">Aucun service pour le moment.</p></div>
+          @endforelse
         </div>
 
       </div>
@@ -706,39 +477,21 @@
           <a href="#" class="btn btn-outline-primary btn-sm">Voir le blog</a>
         </div>
         <div class="row g-4">
+          @forelse($blogPosts as $post)
           <div class="col-md-6 col-lg-4">
-            <div class="card h-100 blog-card">
-              <img src="{{ asset('assets/img/about.jpg') }}" class="card-img-top" alt="">
+            <div class="card h-100 blog-card position-relative">
+                <img src="{{ $post->image_url }}" class="card-img-top" alt="">
               <div class="card-body">
-                <span class="badge bg-light text-dark mb-2">Itinéraire</span>
-                <h3 class="h6">48h à Ouagadougou: que faire ?</h3>
-                <p class="text-muted small mb-3">Musées, marchés, gastronomie et vie nocturne.</p>
-                <a href="#" class="stretched-link">Lire</a>
+                <span class="badge bg-light text-dark mb-2">Communauté</span>
+                <h3 class="h6">{{ \Illuminate\Support\Str::limit(strip_tags($post->content), 60) }}</h3>
+                <p class="text-muted small mb-3">{{ $post->created_at?->format('d/m/Y') }}</p>
+                <a href="{{ route('tourist.community') }}" class="stretched-link">Voir</a>
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
-            <div class="card h-100 blog-card">
-              <img src="{{ asset('assets/img/about-2.jpg') }}" class="card-img-top" alt="">
-              <div class="card-body">
-                <span class="badge bg-light text-dark mb-2">Conseils</span>
-                <h3 class="h6">Préparer sa première randonnée</h3>
-                <p class="text-muted small mb-3">Matériel, sécurité et meilleures saisons.</p>
-                <a href="#" class="stretched-link">Lire</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-4">
-            <div class="card h-100 blog-card">
-              <img src="{{ asset('assets/img/services.jpg') }}" class="card-img-top" alt="">
-              <div class="card-body">
-                <span class="badge bg-light text-dark mb-2">Inspiration</span>
-                <h3 class="h6">Top 5 des sites à voir absolument</h3>
-                <p class="text-muted small mb-3">Des paysages naturels et une culture unique.</p>
-                <a href="#" class="stretched-link">Lire</a>
-              </div>
-            </div>
-          </div>
+          @empty
+          <div class="col-12"><p class="text-muted">Aucun article pour le moment.</p></div>
+          @endforelse
         </div>
       </div>
     </section>
@@ -907,12 +660,12 @@
     <section id="portfolio" class="portfolio section">
 
       <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
+      <!-- <div class="container section-title" data-aos="fade-up">
         <h2>Portfolio</h2>
-        <p>CHECK OUR PORTFOLIO</p>
-      </div><!-- End Section Title -->
+        <p>CHECK OUR PORTFOLIO</p> -->
+      <!-- </div>End Section Title -->
 
-      <div class="container">
+      <!-- <div class="container">
 
         <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
 
@@ -922,9 +675,9 @@
             <li data-filter=".filter-product">Product</li>
             <li data-filter=".filter-branding">Branding</li>
             <li data-filter=".filter-books">Books</li>
-          </ul><!-- End Portfolio Filters -->
+          </ul> -->
 
-          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+          <!-- <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
 
             <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
               <div class="portfolio-content h-100">
@@ -936,9 +689,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/product-1.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -948,9 +701,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/branding-1.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -960,9 +713,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/books-1.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -972,9 +725,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/app-2.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -984,9 +737,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/product-2.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -996,9 +749,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/branding-2.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1008,9 +761,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/books-2.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1020,9 +773,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/app-3.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1032,9 +785,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/product-3.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1044,9 +797,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/branding-3.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1056,9 +809,9 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div> -->
 
-            <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
+            <!-- <div class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books">
               <div class="portfolio-content h-100">
                 <img src="{{ asset('assets/img/portfolio/books-3.jpg') }}" class="img-fluid" alt="">
                 <div class="portfolio-info">
@@ -1068,13 +821,13 @@
                   <a href="portfolio-details.html" title="More Details" class="details-link"><i class="bi bi-link-45deg"></i></a>
                 </div>
               </div>
-            </div><!-- End Portfolio Item -->
+            </div>
 
-          </div><!-- End Portfolio Container -->
+          </div> -->
 
-        </div>
+        <!-- </div> -->
 
-      </div>
+      <!-- </div> -->
 
     </section><!-- /Portfolio Section -->
 

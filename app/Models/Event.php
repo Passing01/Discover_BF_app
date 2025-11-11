@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Event extends Model
 {
@@ -113,5 +114,16 @@ class Event extends Model
         }
         
         return $start . ' au ' . $end;
+    }
+
+    /**
+     * Accessor: Unified public URL for the event's image.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $path = $this->image_path ?? null;
+        if (!$path) return null;
+        if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) return $path;
+        return Storage::url($path);
     }
 }
